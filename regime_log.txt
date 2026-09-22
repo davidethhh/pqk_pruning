@@ -1,0 +1,24 @@
+== regime / synthetic
+   baseline       ideal=0.774 full=0.781±0.005 | random@0.25=0.709 random@0.5=0.756 w_only@0.25=0.700 w_only@0.5=0.774 kta_w_rank@0.25=0.759 kta_w_rank@0.5=0.759 | best=w_only@0.5 gap=-0.007  (94s)
+   standardize    ideal=0.774 full=0.781±0.029 | random@0.25=0.725 random@0.5=0.758 w_only@0.25=0.741 w_only@0.5=0.778 kta_w_rank@0.25=0.767 kta_w_rank@0.5=0.778 | best=w_only@0.5 gap=-0.004  (94s)
+   krr            ideal=0.807 full=0.830±0.005 | random@0.25=0.758 random@0.5=0.806 w_only@0.25=0.730 w_only@0.5=0.811 kta_w_rank@0.25=0.807 kta_w_rank@0.5=0.841 | best=kta_w_rank@0.5 gap=+0.011  (94s)
+   coherent_3pct  ideal=0.774 full=0.789±0.009 | random@0.25=0.715 random@0.5=0.756 w_only@0.25=0.689 w_only@0.5=0.781 kta_w_rank@0.25=0.756 kta_w_rank@0.5=0.767 | best=w_only@0.5 gap=-0.007  (94s)
+   coherent_8pct  ideal=0.774 full=0.774±0.005 | random@0.25=0.705 random@0.5=0.767 w_only@0.25=0.689 w_only@0.5=0.767 kta_w_rank@0.25=0.759 kta_w_rank@0.5=0.759 | best=random@0.5 gap=-0.007  (94s)
+   sharp_gamma    ideal=0.785 full=0.793±0.014 | random@0.25=0.737 random@0.5=0.768 w_only@0.25=0.722 w_only@0.5=0.759 kta_w_rank@0.25=0.781 kta_w_rank@0.5=0.804 | best=kta_w_rank@0.5 gap=+0.011  (94s)
+   small_train    ideal=0.696 full=0.704±0.023 | random@0.25=0.637 random@0.5=0.684 w_only@0.25=0.637 w_only@0.5=0.670 kta_w_rank@0.25=0.644 kta_w_rank@0.5=0.656 | best=random@0.5 gap=-0.020  (44s)
+   low_shot       ideal=0.774 full=0.733±0.009 | random@0.25=0.667 random@0.5=0.678 w_only@0.25=0.689 w_only@0.5=0.700 kta_w_rank@0.25=0.741 kta_w_rank@0.5=0.719 | best=kta_w_rank@0.25 gap=+0.007  (17s)
+   n8             ideal=0.744 full=0.770±0.037 | random@0.25=0.675 random@0.5=0.748 w_only@0.25=0.719 w_only@0.5=0.789 kta_w_rank@0.25=0.767 kta_w_rank@0.5=0.756 | best=w_only@0.5 gap=+0.019  (147s)
+   std_coherent   ideal=0.774 full=0.774±0.034 | random@0.25=0.714 random@0.5=0.757 w_only@0.25=0.737 w_only@0.5=0.767 kta_w_rank@0.25=0.770 kta_w_rank@0.5=0.763 | best=kta_w_rank@0.25 gap=-0.004  (94s)
+   865s
+== regime / breast_cancer
+   baseline       ideal=0.940 full=0.943±0.020 | random@0.25=0.921 random@0.5=0.936 w_only@0.25=0.928 w_only@0.5=0.940 kta_w_rank@0.25=0.942 kta_w_rank@0.5=0.942 | best=kta_w_rank@0.25 gap=-0.002  (179s)
+   standardize    ideal=0.934 full=0.934±0.023 | random@0.25=0.924 random@0.5=0.931 w_only@0.25=0.926 w_only@0.5=0.936 kta_w_rank@0.25=0.938 kta_w_rank@0.5=0.938 | best=kta_w_rank@0.25 gap=+0.004  (178s)
+   krr            ideal=0.930 full=0.938±0.010 | random@0.25=0.928 random@0.5=0.934 w_only@0.25=0.938 w_only@0.5=0.945 kta_w_rank@0.25=0.953 kta_w_rank@0.5=0.945 | best=kta_w_rank@0.25 gap=+0.016  (179s)
+   coherent_3pct  ideal=0.940 full=0.942±0.017 | random@0.25=0.917 random@0.5=0.938 w_only@0.25=0.928 w_only@0.5=0.940 kta_w_rank@0.25=0.942 kta_w_rank@0.5=0.938 | best=kta_w_rank@0.25 gap=+0.000  (180s)
+   coherent_8pct  ideal=0.940 full=0.943±0.020 | random@0.25=0.920 random@0.5=0.939 w_only@0.25=0.932 w_only@0.5=0.942 kta_w_rank@0.25=0.940 kta_w_rank@0.5=0.943 | best=kta_w_rank@0.5 gap=-0.000  (180s)
+   sharp_gamma    ideal=0.924 full=0.940±0.006 | random@0.25=0.928 random@0.5=0.936 w_only@0.25=0.936 w_only@0.5=0.947 kta_w_rank@0.25=0.953 kta_w_rank@0.5=0.947 | best=kta_w_rank@0.25 gap=+0.014  (179s)
+   small_train    ideal=0.903 full=0.908±0.031 | random@0.25=0.836 random@0.5=0.886 w_only@0.25=0.899 w_only@0.5=0.912 kta_w_rank@0.25=0.916 kta_w_rank@0.5=0.914 | best=kta_w_rank@0.25 gap=+0.008  (69s)
+   low_shot       ideal=0.940 full=0.934±0.030 | random@0.25=0.894 random@0.5=0.921 w_only@0.25=0.918 w_only@0.5=0.928 kta_w_rank@0.25=0.924 kta_w_rank@0.5=0.934 | best=kta_w_rank@0.5 gap=+0.000  (32s)
+   n8             ideal=0.942 full=0.940±0.010 | random@0.25=0.909 random@0.5=0.934 w_only@0.25=0.943 w_only@0.5=0.940 kta_w_rank@0.25=0.942 kta_w_rank@0.5=0.943 | best=w_only@0.25 gap=+0.004  (280s)
+   std_coherent   ideal=0.934 full=0.934±0.018 | random@0.25=0.928 random@0.5=0.933 w_only@0.25=0.936 w_only@0.5=0.934 kta_w_rank@0.25=0.943 kta_w_rank@0.5=0.938 | best=kta_w_rank@0.25 gap=+0.010  (180s)
+   1634s
