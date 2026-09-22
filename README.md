@@ -22,4 +22,13 @@ settings (`pqk.measurement_jobs(min_settings=True)`), so pruning buys more shots
 
 Outputs land in `results/*.json` and `figures/*.png`. Quick-mode numbers are on 60/30 samples and are only for checking the pipeline runs.
 
+Regime scan (`--exp regime`): pre-registered conditions that each remove one reason the SVM is
+noise-blind — `standardize` (z-scored features), `krr` (kernel ridge, fixed alpha), `coherent_3pct`/`coherent_8pct`
+(systematic over-rotation on sx/x and cx), `sharp_gamma` (8x median gamma), `small_train` (50 points),
+`low_shot` (150 shots per data point), `n8` (8 qubits, 276 observables), `std_coherent`. Each reports
+ideal / full-noisy / pruned accuracy (3 filters x 2 keep fractions) and the best pruned-minus-full gap.
+Results are saved incrementally to results/regime_<dataset>.json so a partial run is still usable.
+
+    caffeinate -i python noise_experiments.py --exp regime --seeds 42 43 44 2>&1 | tee regime_log.txt
+
 Next: summary notebook (Plots 1-3 of the workplan) once full runs exist.

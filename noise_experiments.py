@@ -28,7 +28,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from qiskit_aer.noise import NoiseModel, depolarizing_error
+from qiskit.circuit.library import RXGate, RZZGate
+from qiskit_aer.noise import NoiseModel, coherent_unitary_error, depolarizing_error
+from sklearn.kernel_ridge import KernelRidge
 
 from dataset_loader import load_dataset
 from kernel import (evaluate_kernel, frobenius_distance, gaussian_kernel, median_gamma,
@@ -62,10 +64,20 @@ class HardwareProfile:
     def readout_noise(self, factor: float = 1.0) -> ReadoutNoise:
         return ReadoutNoise.symmetric(self.readout_error, self.crosstalk).scaled(factor)
 
-    def gate_noise_model(self) -> NoiseModel:
+    def gate_noise_model(self, coherent: float = 0.0) -> NoiseModel:
+        """Depolarizing gate noise; if `coherent` > 0, every sx/x is followed by an
+        RX(coherent) over-rotation and every cx by an RZZ(coherent) — a systematic
+        miscalibration that biases each Pauli feature differently, unlike
+        depolarizing/readout noise which only attenuate."""
         nm = NoiseModel()
-        nm.add_all_qubit_quantum_error(depolarizing_error(self.sq_error, 1), ["sx", "x", "rz"])
-        nm.add_all_qubit_quantum_error(depolarizing_error(self.cx_error, 2), ["cx"])
+        if coherent > 0:
+            nm.add_all_qubit_quantum_error(
+                coherent_unitary_error(RXGate(coherent).to_matrix()).compose(depolarizing_error(self.sq_error, 1)), ["sx", "x"])
+            nm.add_all_qubit_quantum_error(
+                coherent_unitary_error(RZZGate(coherent).to_matrix()).compose(depolarizing_error(self.cx_error, 2)), ["cx"])
+        else:
+            nm.add_all_qubit_quantum_error(depolarizing_error(self.sq_error, 1), ["sx", "x"])
+            nm.add_all_qubit_quantum_error(depolarizing_error(self.cx_error, 2), ["cx"])
         return nm
 
     # ---- pruning weight  W_hardware(O)
@@ -230,12 +242,19 @@ def exp_c(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seed: i
 
 
 # ============================================================================ pruning
-def noisy_split_features(dataset, hw, *, factor, shots, quick, seed, gate_noise=True):
-    n = hw.n
+def noisy_split_features(dataset, hw, *, factor, shots, quick, seed, gate_noise=True,
+                         n_qubits=None, n_train=None, total_shots=None, coherent=0.0):
+    n = n_qubits or hw.n
     X_tr, X_te, y_tr, y_te = load_split(dataset, n, seed, quick)
+    if n_train is not None:
+        X_tr, y_tr = X_tr[:n_train], y_tr[:n_train]
     obs = build_observables(n)
-    kw = dict(readout_noise=hw.readout_noise(factor), shots=shots, seed=seed,
-              noise_model=hw.gate_noise_model() if gate_noise else None)
+    kw = dict(readout_noise=hw.readout_noise(factor), seed=seed,
+              noise_model=hw.gate_noise_model(coherent) if gate_noise else None)
+    if total_shots is not None:
+        kw.update(total_shots=total_shots, min_settings=True)
+    else:
+        kw.update(shots=shots)
     return dict(obs=obs, y_tr=y_tr, y_te=y_te,
                 Fx_tr=exact_features(X_tr, obs), Fx_te=exact_features(X_te, obs),
                 Fn_tr=sampled_features(X_tr, obs, **kw), Fn_te=sampled_features(X_te, obs, **kw))
@@ -273,13 +292,36 @@ def select_beta(D: dict, k: np.ndarray, w: np.ndarray, betas=(1, 2, 4, 8, 16), k
     return best
 
 
-def evaluate_subset(D: dict, keep: np.ndarray) -> dict:
+def _standardize(F_tr, F_te):
+    mu, sd = F_tr.mean(axis=0), F_tr.std(axis=0) + 1e-9
+    return (F_tr - mu) / sd, (F_te - mu) / sd
+
+
+def _krr_accuracy(K_tr, K_te, y_tr, y_te, alpha=0.1):
+    m = KernelRidge(kernel="precomputed", alpha=alpha).fit(K_tr, y_tr)
+    return float(np.mean(np.sign(m.predict(K_te)) == y_te))
+
+
+def evaluate_subset(D: dict, keep: np.ndarray, *, standardize=False, classifier="svm", gamma_scale=1.0) -> dict:
     """Noisy kernel on the kept observables, scored against K_exact restricted to
-    the same observables with the same gamma (median heuristic on exact train features)."""
-    gamma = median_gamma(D["Fx_tr"][:, keep])
-    K_ex = gaussian_kernel(D["Fx_tr"][:, keep], D["Fx_tr"][:, keep], gamma)
-    res = evaluate_kernel(D["Fn_tr"][:, keep], D["Fn_te"][:, keep], D["y_tr"], D["y_te"], gamma)
-    ideal = evaluate_kernel(D["Fx_tr"][:, keep], D["Fx_te"][:, keep], D["y_tr"], D["y_te"], gamma)
+    the same observables with the same gamma (median heuristic on exact train features).
+
+    standardize : z-score features on train stats (noisy stats for noisy, exact for exact)
+    classifier  : "svm" (C=1) or "krr" (kernel ridge, alpha=0.1, sign of prediction)
+    gamma_scale : multiply the median-heuristic gamma (sharper kernel > 1)
+    """
+    Fx_tr, Fx_te = D["Fx_tr"][:, keep], D["Fx_te"][:, keep]
+    Fn_tr, Fn_te = D["Fn_tr"][:, keep], D["Fn_te"][:, keep]
+    if standardize:
+        Fx_tr, Fx_te = _standardize(Fx_tr, Fx_te)
+        Fn_tr, Fn_te = _standardize(Fn_tr, Fn_te)
+    gamma = median_gamma(Fx_tr) * gamma_scale
+    K_ex = gaussian_kernel(Fx_tr, Fx_tr, gamma)
+    res = evaluate_kernel(Fn_tr, Fn_te, D["y_tr"], D["y_te"], gamma)
+    ideal = evaluate_kernel(Fx_tr, Fx_te, D["y_tr"], D["y_te"], gamma)
+    if classifier == "krr":
+        res["acc"] = _krr_accuracy(res["K_train"], res["K_test"], D["y_tr"], D["y_te"])
+        ideal["acc"] = _krr_accuracy(ideal["K_train"], ideal["K_test"], D["y_tr"], D["y_te"])
     return {"frobenius": frobenius_distance(res["K_train"], K_ex) / np.linalg.norm(K_ex),
             "acc_noisy": res["acc"], "acc_ideal": ideal["acc"], "kta_noisy": res["kta"], "n_obs": int(len(keep))}
 
@@ -413,16 +455,92 @@ def shot_budget(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, s
     return out
 
 
+# ============================================================================ regime scan
+# Pre-registered regimes, each removing one link in the chain that makes the SVM
+# noise-blind (multiplicative attenuation -> smooth Gaussian kernel -> wide margin).
+REGIMES = {
+    "baseline":     {},
+    "standardize":  {"eval": {"standardize": True}},
+    "krr":          {"eval": {"classifier": "krr"}},
+    "coherent_3pct":{"feat": {"coherent": 0.03}},
+    "coherent_8pct":{"feat": {"coherent": 0.08}},
+    "sharp_gamma":  {"eval": {"gamma_scale": 8.0}},
+    "small_train":  {"feat": {"n_train": 50}},
+    "low_shot":     {"feat": {"total_shots": 150}},          # ~10 shots per measurement job
+    "n8":           {"feat": {"n_qubits": 8}},
+    "std_coherent": {"feat": {"coherent": 0.03}, "eval": {"standardize": True}},
+}
+
+
+def regime_scan(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seeds=(42,),
+                regimes=None, keep_fractions=(0.25, 0.5), filters=("random", "w_only", "kta_w_rank")) -> dict:
+    regimes = regimes or list(REGIMES)
+    out = {"seeds": list(seeds), "keep_fractions": list(keep_fractions), "regimes": {}}
+    for name in regimes:
+        cfg = REGIMES[name]
+        feat_kw, eval_kw = cfg.get("feat", {}), cfg.get("eval", {})
+        hw_r = hw
+        if feat_kw.get("n_qubits"):
+            n8 = feat_kw["n_qubits"]
+            hw_r = HardwareProfile(n=n8,
+                                   readout_error={q: (.005 if q < n8 // 2 else .06) for q in range(n8)},
+                                   cx_error=hw.cx_error, sq_error=hw.sq_error,
+                                   crosstalk={(q, q + 1): .10 for q in range(0, n8 - 1, 2)})
+        acc = {"full": []}; frob = {"full": []}; kta = {"full": []}; ideal = []
+        for f in filters:
+            for kf in keep_fractions:
+                acc[f"{f}@{kf}"], frob[f"{f}@{kf}"], kta[f"{f}@{kf}"] = [], [], []
+        t = time.time()
+        for sd in seeds:
+            D = noisy_split_features(dataset, hw_r, factor=1.0, shots=shots, quick=quick, seed=sd, **feat_kw)
+            rng = np.random.default_rng(sd)
+            sc = score_table(D, hw_r, rng)
+            r = evaluate_subset(D, np.arange(len(D["obs"])), **eval_kw)
+            acc["full"].append(r["acc_noisy"]); frob["full"].append(r["frobenius"]); kta["full"].append(r["kta_noisy"]); ideal.append(r["acc_ideal"])
+            for f in filters:
+                for kf in keep_fractions:
+                    if f == "random":
+                        reps = [evaluate_subset(D, prune(rng.random(len(sc[f])), keep_fraction=kf), **eval_kw) for _ in range(3)]
+                        r = {k: float(np.mean([x[k] for x in reps])) for k in reps[0]}
+                    else:
+                        r = evaluate_subset(D, prune(sc[f], keep_fraction=kf), **eval_kw)
+                    key = f"{f}@{kf}"
+                    acc[key].append(r["acc_noisy"]); frob[key].append(r["frobenius"]); kta[key].append(r["kta_noisy"])
+        summ = {k: {"acc": float(np.mean(v)), "acc_std": float(np.std(v)),
+                    "frob": float(np.mean(frob[k])), "kta": float(np.mean(kta[k]))} for k, v in acc.items()}
+        summ["ideal_full"] = float(np.mean(ideal))
+        best = max((k for k in summ if k != "full" and k != "ideal_full"), key=lambda k: summ[k]["acc"])
+        summ["best_pruned"] = best
+        summ["gap"] = summ[best]["acc"] - summ["full"]["acc"]
+        out["regimes"][name] = summ
+        print(f"   {name:14s} ideal={summ['ideal_full']:.3f} full={summ['full']['acc']:.3f}±{summ['full']['acc_std']:.3f} "
+              f"| " + " ".join(f"{k}={summ[k]['acc']:.3f}" for k in summ if '@' in k)
+              + f" | best={best} gap={summ['gap']:+.3f}  ({time.time() - t:.0f}s)")
+        save(f"regime_{dataset}", out)  # save incrementally
+
+    fig, ax = plt.subplots(figsize=(9, 3.8))
+    names = list(out["regimes"]); x = np.arange(len(names))
+    ax.bar(x - 0.3, [out["regimes"][n]["ideal_full"] for n in names], 0.2, label="ideal (noiseless, all obs)", color="lightgray")
+    ax.bar(x - 0.1, [out["regimes"][n]["full"]["acc"] for n in names], 0.2, yerr=[out["regimes"][n]["full"]["acc_std"] for n in names], label="full noisy")
+    ax.bar(x + 0.1, [out["regimes"][n]["w_only@0.25"]["acc"] for n in names], 0.2, yerr=[out["regimes"][n]["w_only@0.25"]["acc_std"] for n in names], label="W-only @25%")
+    ax.bar(x + 0.3, [out["regimes"][n]["kta_w_rank@0.25"]["acc"] for n in names], 0.2, yerr=[out["regimes"][n]["kta_w_rank@0.25"]["acc_std"] for n in names], label="KTA·W rank @25%")
+    ax.set_xticks(x); ax.set_xticklabels(names, rotation=45, ha="right"); ax.set_ylabel("test accuracy")
+    ax.set_title(f"Regime scan ({dataset})"); ax.legend(fontsize=7); fig.tight_layout()
+    FIGURES.mkdir(exist_ok=True); fig.savefig(FIGURES / f"regime_{dataset}.png", dpi=150); plt.close(fig)
+    return out
+
+
 # ============================================================================ CLI
-EXPS = {"A": exp_a, "B": exp_b, "C": exp_c, "ablation": ablation, "dose": dose_response, "budget": shot_budget}
+EXPS = {"A": exp_a, "B": exp_b, "C": exp_c, "ablation": ablation, "dose": dose_response, "budget": shot_budget, "regime": regime_scan}
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--exp", nargs="+", default=list(EXPS), choices=list(EXPS))
     ap.add_argument("--dataset", nargs="+", default=["synthetic", "breast_cancer"])
     ap.add_argument("--shots", type=int, default=2000)
-    ap.add_argument("--seeds", type=int, nargs="+", default=[42], help="dose and budget only")
+    ap.add_argument("--seeds", type=int, nargs="+", default=[42], help="dose, budget and regime")
     ap.add_argument("--quick", action="store_true", help="subsample + 1000 shots; smoke test")
+    ap.add_argument("--regimes", nargs="+", default=None, choices=list(REGIMES), help="regime scan only")
     args = ap.parse_args()
     shots = 1000 if args.quick else args.shots
     hw = HardwareProfile()
@@ -430,7 +548,9 @@ if __name__ == "__main__":
         for e in args.exp:
             t = time.time()
             print(f"== {e} / {ds}")
-            kw = {"seeds": tuple(args.seeds)} if e in ("dose", "budget") else {}
+            kw = {"seeds": tuple(args.seeds)} if e in ("dose", "budget", "regime") else {}
+            if e == "regime" and args.regimes:
+                kw["regimes"] = args.regimes
             r = EXPS[e](ds, hw, shots=shots, quick=args.quick, **kw)
             if e == "A":
                 for tag in ("adjacent_only", "with_0_5_entangler"):
