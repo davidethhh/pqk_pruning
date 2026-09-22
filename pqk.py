@@ -186,32 +186,11 @@ class ReadoutNoise:
         return out
 
 
-def sampled_features(X: np.ndarray, observables: list[Observable], *,
-                     noise_model=None, readout_noise: ReadoutNoise | None = None,
-                     coupling_map: CouplingMap | None = None,
-                     measure_groups: list[tuple[int, ...]] | None = None,
-                     shots: int = 2000, extra_pairs=None, seed: int = 7,
-                     optimization_level: int = 1, return_variance: bool = False):
-    """Shot-based expectation values under gate noise (Aer noise_model), readout
-    noise (ReadoutNoise) and a coupling map (SWAP routing).
-
-    measure_groups: which qubits are read out together.  Default: all at once.
-    A staggered schedule (e.g. [(0,2,4),(1,3,5),(0,1),(1,2),...]) reads out
-    non-neighbouring qubits in separate circuits so crosstalk cannot fire; every
-    observable is estimated from the groups that contain all of its qubits.
-
-    Returns F (n_samples x n_obs) and, optionally, the estimator variance
-    Var[<O>] = (1 - <O>^2) / n_shots_used.
-    """
-    n = X.shape[1]
-    rng = np.random.default_rng(seed)
-    sim = AerSimulator(noise_model=noise_model, seed_simulator=seed)
-    if coupling_map is None:
-        coupling_map = linear_coupling_map(n)
+def measurement_jobs(n: int, observables: list[Observable], measure_groups=None, min_settings: bool = False):
+    """Return (jobs, serves): jobs = [(basis, group)], serves[o] = job indices estimating o."""
     if measure_groups is None:
         measure_groups = [tuple(range(n))]
     measure_groups = [tuple(g) for g in measure_groups]
-
     # (basis restricted to group, group) -> distinct measurement jobs
     jobs: list[tuple[str, tuple[int, ...]]] = []
     seen = set()
@@ -227,6 +206,53 @@ def sampled_features(X: np.ndarray, observables: list[Observable], *,
     for o, js in serves.items():
         if not js:
             raise ValueError(f"observable {o.label} is not served by any measurement group")
+    if min_settings:
+        # greedy set cover: keep adding the job that serves the most still-uncovered observables
+        uncovered = set(range(len(observables)))
+        chosen: list[int] = []
+        while uncovered:
+            best = max(range(len(jobs)), key=lambda j: sum(1 for m in uncovered if j in serves[observables[m]]))
+            chosen.append(best)
+            uncovered -= {m for m in uncovered if best in serves[observables[m]]}
+        keep = sorted(set(chosen))
+        remap = {old: new for new, old in enumerate(keep)}
+        jobs = [jobs[j] for j in keep]
+        serves = {o: [remap[j] for j in js if j in remap] for o, js in serves.items()}
+    return jobs, serves
+
+
+def sampled_features(X: np.ndarray, observables: list[Observable], *,
+                     noise_model=None, readout_noise: ReadoutNoise | None = None,
+                     coupling_map: CouplingMap | None = None,
+                     measure_groups: list[tuple[int, ...]] | None = None,
+                     shots: int = 2000, total_shots: int | None = None, min_settings: bool = False,
+                     extra_pairs=None, seed: int = 7,
+                     optimization_level: int = 1, return_variance: bool = False):
+    """Shot-based expectation values under gate noise (Aer noise_model), readout
+    noise (ReadoutNoise) and a coupling map (SWAP routing).
+
+    Shot budget: `shots` is per measurement job.  If `total_shots` is given it is
+    the budget per data point and is split evenly over the jobs actually run, so
+    a smaller observable set gets more shots per job.  With `min_settings=True`
+    the jobs are a greedy set cover of the requested observables (instead of the
+    full 27-setting orthogonal array), which is what makes pruning pay in shots.
+
+    measure_groups: which qubits are read out together.  Default: all at once.
+    A staggered schedule (e.g. [(0,2,4),(1,3,5),(0,1),(1,2),...]) reads out
+    non-neighbouring qubits in separate circuits so crosstalk cannot fire; every
+    observable is estimated from the groups that contain all of its qubits.
+
+    Returns F (n_samples x n_obs) and, optionally, the estimator variance
+    Var[<O>] = (1 - <O>^2) / n_shots_used.
+    """
+    n = X.shape[1]
+    rng = np.random.default_rng(seed)
+    sim = AerSimulator(noise_model=noise_model, seed_simulator=seed)
+    if coupling_map is None:
+        coupling_map = linear_coupling_map(n)
+    jobs, serves = measurement_jobs(n, observables, measure_groups, min_settings)
+    if total_shots is not None:
+        shots = max(1, total_shots // len(jobs))
 
     F = np.empty((len(X), len(observables)))
     V = np.empty_like(F)

@@ -7,53 +7,55 @@
     4.0
   ],
   "seeds": [
-    42
+    42,
+    43,
+    44
   ],
   "rows": [
     {
       "factor": 0.0,
-      "acc_full": 0.7666666666666667,
-      "acc_full_std": 0.0,
-      "acc_pruned": 0.8,
-      "acc_pruned_std": 0.0,
-      "frob_full": 0.04756773343047091,
-      "frob_pruned": 0.050582838049084505
+      "acc_full": 0.939571150097466,
+      "acc_full_std": 0.014587358233036809,
+      "acc_pruned": 0.9395711500974658,
+      "acc_pruned_std": 0.019297261085012996,
+      "frob_full": 0.049531908647596636,
+      "frob_pruned": 0.04695260019565892
     },
     {
       "factor": 0.5,
-      "acc_full": 0.8,
-      "acc_full_std": 0.0,
-      "acc_pruned": 0.8333333333333334,
-      "acc_pruned_std": 0.0,
-      "frob_full": 0.17840452843648538,
-      "frob_pruned": 0.1612401622441264
+      "acc_full": 0.9415204678362573,
+      "acc_full_std": 0.0172159081214968,
+      "acc_pruned": 0.939571150097466,
+      "acc_pruned_std": 0.022564984215965325,
+      "frob_full": 0.18677017549068942,
+      "frob_pruned": 0.1620794811057611
     },
     {
       "factor": 1.0,
-      "acc_full": 0.8,
-      "acc_full_std": 0.0,
-      "acc_pruned": 0.8333333333333334,
-      "acc_pruned_std": 0.0,
-      "frob_full": 0.3045527689186788,
-      "frob_pruned": 0.26326915228326553
+      "acc_full": 0.9434697855750488,
+      "acc_full_std": 0.01987921837658006,
+      "acc_pruned": 0.94541910331384,
+      "acc_pruned_std": 0.022054012668586278,
+      "frob_full": 0.3191394730654111,
+      "frob_pruned": 0.2679920816831871
     },
     {
       "factor": 2.0,
-      "acc_full": 0.8333333333333334,
-      "acc_full_std": 0.0,
-      "acc_pruned": 0.8333333333333334,
-      "acc_pruned_std": 0.0,
-      "frob_full": 0.5321979673322734,
-      "frob_pruned": 0.45265090083454823
+      "acc_full": 0.939571150097466,
+      "acc_full_std": 0.022564984215965325,
+      "acc_pruned": 0.9376218323586745,
+      "acc_pruned_std": 0.02450254403504197,
+      "frob_full": 0.5518864342421553,
+      "frob_pruned": 0.459059677501186
     },
     {
       "factor": 4.0,
-      "acc_full": 0.8,
-      "acc_full_std": 0.0,
-      "acc_pruned": 0.8333333333333334,
-      "acc_pruned_std": 0.0,
-      "frob_full": 0.8343110928445758,
-      "frob_pruned": 0.7149324129276714
+      "acc_full": 0.922027290448343,
+      "acc_full_std": 0.026297734041387983,
+      "acc_pruned": 0.9259259259259259,
+      "acc_pruned_std": 0.031792410195516735,
+      "frob_full": 0.8594271408667723,
+      "frob_pruned": 0.7267701428451728
     }
   ]
 }

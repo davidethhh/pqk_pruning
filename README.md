@@ -13,6 +13,12 @@ Modules
     python noise_experiments.py --quick                          # ~4 min smoke test, subsampled
     python noise_experiments.py                                  # full run, both datasets (~30-40 min)
     python noise_experiments.py --exp dose --seeds 42 43 44 45 46   # dose-response with 5 seeds
+    python noise_experiments.py --exp budget --seeds 42 43 44       # fixed-shot-budget sweep
+
+Filters in the ablation: `random`, `kta_only`, `w_only`, `kta_w` (workplan v1: raw product),
+`kta_w_rank` (v2a: product of normalised ranks), `kta_w_beta` (v2b: KTA·W^β, β picked on a validation fold).
+The shot-budget sweep holds total shots per data point fixed and uses a greedy set cover of measurement
+settings (`pqk.measurement_jobs(min_settings=True)`), so pruning buys more shots per kept observable.
 
 Outputs land in `results/*.json` and `figures/*.png`. Quick-mode numbers are on 60/30 samples and are only for checking the pipeline runs.
 

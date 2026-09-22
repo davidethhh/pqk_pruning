@@ -34,7 +34,8 @@ from dataset_loader import load_dataset
 from kernel import (evaluate_kernel, frobenius_distance, gaussian_kernel, median_gamma,
                     per_observable_kta, prune)
 from pqk import (Observable, ReadoutNoise, build_observables, exact_features,
-                 sampled_features, staggered_groups)
+                 measurement_jobs, sampled_features, staggered_groups)
+from sklearn.model_selection import train_test_split
 
 RESULTS = Path("results")
 FIGURES = Path("figures")
@@ -246,7 +247,30 @@ def score_table(D: dict, hw: HardwareProfile, rng: np.random.Generator) -> dict[
     gamma = median_gamma(D["Fn_tr"])
     k = per_observable_kta(D["Fn_tr"], D["y_tr"], gamma)
     w = hw.weights(D["obs"])
-    return {"random": rng.random(len(k)), "kta_only": k, "w_only": w, "kta_w": k * w}
+    return {"random": rng.random(len(k)), "kta_only": k, "w_only": w, "kta_w": k * w,
+            "kta_w_rank": rank_product(k, w), "kta_w_beta": k * w ** select_beta(D, k, w)}
+
+
+def rank_product(k: np.ndarray, w: np.ndarray) -> np.ndarray:
+    """Filter v2a: product of normalised ranks, so neither term's scale dominates."""
+    rk = np.argsort(np.argsort(k)) / (len(k) - 1)
+    rw = np.argsort(np.argsort(w)) / (len(w) - 1)
+    return rk * rw
+
+
+def select_beta(D: dict, k: np.ndarray, w: np.ndarray, betas=(1, 2, 4, 8, 16), keep_fraction=0.5, seed=0) -> float:
+    """Filter v2b: KTA * W^beta with beta chosen on a validation fold carved from train."""
+    idx_tr, idx_va = train_test_split(np.arange(len(D["y_tr"])), test_size=0.25, random_state=seed, stratify=D["y_tr"])
+    best, best_acc = betas[0], -1.0
+    for b in betas:
+        keep = prune(k * w ** b, keep_fraction=keep_fraction)
+        gamma = median_gamma(D["Fn_tr"][idx_tr][:, keep])
+        r = evaluate_kernel(D["Fn_tr"][idx_tr][:, keep], D["Fn_tr"][idx_va][:, keep],
+                            D["y_tr"][idx_tr], D["y_tr"][idx_va], gamma)
+        if r["acc"] > best_acc:
+            best, best_acc = b, r["acc"]
+    D["selected_beta"] = best
+    return best
 
 
 def evaluate_subset(D: dict, keep: np.ndarray) -> dict:
@@ -279,6 +303,10 @@ def ablation(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seed
     keep = prune(scores["kta_w"], keep_fraction=0.5)
     dropped = [o.label for m, o in enumerate(D["obs"]) if m not in set(keep)]
     out["dropped_at_50pct_kta_w"] = dropped
+    out["selected_beta"] = D.get("selected_beta")
+    out["distant_pair_0_5_kept_at_50pct_by_filter"] = {
+        name: int(sum(o.qubits == (0, hw.n - 1) for m, o in enumerate(D["obs"]) if m in set(prune(sc, keep_fraction=0.5))))
+        for name, sc in scores.items()}
     out["distant_pair_0_5_kept_at_50pct"] = sum(o.qubits == (0, hw.n - 1) for m, o in enumerate(D["obs"]) if m in set(keep))
     save(f"ablation_{dataset}", out)
 
@@ -295,7 +323,7 @@ def ablation(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seed
 
 
 def dose_response(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seeds=(42,),
-                  factors=(0.0, 0.5, 1.0, 2.0, 4.0), keep_fraction: float = 0.5) -> dict:
+                  factors=(0.0, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0), keep_fraction: float = 0.5) -> dict:
     """Full vs KTA·W-pruned accuracy as the readout profile is scaled.  At 0x the
     pruned kernel should be no better than the full one; the gap should open as
     noise grows.  Gate noise is held fixed."""
@@ -326,15 +354,74 @@ def dose_response(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool,
     return out
 
 
+# ============================================================================ shot budget
+def shot_budget(dataset: str, hw: HardwareProfile, *, shots: int, quick: bool, seeds=(42,),
+                budgets=(540, 1350, 2700, 5400, 13500, 54000), keep_fraction: float = 0.25) -> dict:
+    """Fixed total shots per data point.  Pruning reduces the number of measurement
+    jobs (greedy set cover of the kept observables) so each job gets more shots.
+
+      full        all observables, budget B
+      w_only      calibration-only selection (no data needed), budget B on the kept set
+      kta_w_rank  pilot run on all observables at B/2 to compute KTA, then B/2 on the kept set
+    """
+    n = hw.n
+    obs = build_observables(n)
+    w = hw.weights(obs)
+    if quick:
+        budgets = tuple(b for b in budgets if b <= 5400)
+    out = {"budgets": list(budgets), "seeds": list(seeds), "keep_fraction": keep_fraction, "rows": []}
+    for B in budgets:
+        row = {"budget": B}
+        for name in ("full", "w_only", "kta_w_rank"):
+            accs, frobs, njobs = [], [], None
+            for sd in seeds:
+                X_tr, X_te, y_tr, y_te = load_split(dataset, n, sd, quick)
+                kw = dict(readout_noise=hw.readout_noise(), noise_model=hw.gate_noise_model(),
+                          min_settings=True, seed=sd)
+                if name == "full":
+                    keep, budget = np.arange(len(obs)), B
+                elif name == "w_only":
+                    keep, budget = prune(w, keep_fraction=keep_fraction), B
+                else:
+                    pilot = sampled_features(X_tr, obs, total_shots=B // 2, **kw)
+                    k = per_observable_kta(pilot, y_tr, median_gamma(pilot))
+                    keep, budget = prune(rank_product(k, w), keep_fraction=keep_fraction), B // 2
+                sub = [obs[m] for m in keep]
+                njobs = len(measurement_jobs(n, sub, min_settings=True)[0])
+                Fn_tr = sampled_features(X_tr, sub, total_shots=budget, **kw)
+                Fn_te = sampled_features(X_te, sub, total_shots=budget, **kw)
+                Fx_tr, Fx_te = exact_features(X_tr, sub), exact_features(X_te, sub)
+                gamma = median_gamma(Fx_tr)
+                r = evaluate_kernel(Fn_tr, Fn_te, y_tr, y_te, gamma)
+                K_ex = gaussian_kernel(Fx_tr, Fx_tr, gamma)
+                accs.append(r["acc"]); frobs.append(frobenius_distance(r["K_train"], K_ex) / np.linalg.norm(K_ex))
+            row[name] = {"acc": float(np.mean(accs)), "acc_std": float(np.std(accs)),
+                         "frob": float(np.mean(frobs)), "n_jobs": njobs, "shots_per_job": budget // njobs}
+        out["rows"].append(row)
+        print(f"   B={B:>6}  " + "  ".join(f"{k}={row[k]['acc']:.3f}/{row[k]['frob']:.3f}({row[k]['shots_per_job']}sh x {row[k]['n_jobs']}j)"
+                                        for k in ("full", "w_only", "kta_w_rank")))
+    save(f"budget_{dataset}", out)
+
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.5))
+    for name, st in (("full", "s-"), ("w_only", "o--"), ("kta_w_rank", "^:")):
+        axes[0].errorbar(budgets, [r[name]["acc"] for r in out["rows"]], [r[name]["acc_std"] for r in out["rows"]], fmt=st, label=name)
+        axes[1].plot(budgets, [r[name]["frob"] for r in out["rows"]], st, label=name)
+    for ax in axes: ax.set_xscale("log"); ax.set_xlabel("total shots per data point"); ax.legend(fontsize=7)
+    axes[0].set_ylabel("SVM test accuracy"); axes[1].set_ylabel("||K_noisy - K_exact|| / ||K_exact||")
+    fig.suptitle(f"Shot-budget sweep, keep {keep_fraction:.0%} ({dataset})"); fig.tight_layout()
+    FIGURES.mkdir(exist_ok=True); fig.savefig(FIGURES / f"budget_{dataset}.png", dpi=150); plt.close(fig)
+    return out
+
+
 # ============================================================================ CLI
-EXPS = {"A": exp_a, "B": exp_b, "C": exp_c, "ablation": ablation, "dose": dose_response}
+EXPS = {"A": exp_a, "B": exp_b, "C": exp_c, "ablation": ablation, "dose": dose_response, "budget": shot_budget}
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--exp", nargs="+", default=list(EXPS), choices=list(EXPS))
     ap.add_argument("--dataset", nargs="+", default=["synthetic", "breast_cancer"])
     ap.add_argument("--shots", type=int, default=2000)
-    ap.add_argument("--seeds", type=int, nargs="+", default=[42], help="dose-response only")
+    ap.add_argument("--seeds", type=int, nargs="+", default=[42], help="dose and budget only")
     ap.add_argument("--quick", action="store_true", help="subsample + 1000 shots; smoke test")
     args = ap.parse_args()
     shots = 1000 if args.quick else args.shots
@@ -343,7 +430,7 @@ if __name__ == "__main__":
         for e in args.exp:
             t = time.time()
             print(f"== {e} / {ds}")
-            kw = {"seeds": tuple(args.seeds)} if e == "dose" else {}
+            kw = {"seeds": tuple(args.seeds)} if e in ("dose", "budget") else {}
             r = EXPS[e](ds, hw, shots=shots, quick=args.quick, **kw)
             if e == "A":
                 for tag in ("adjacent_only", "with_0_5_entangler"):
@@ -356,5 +443,5 @@ if __name__ == "__main__":
             elif e == "ablation":
                 for name, rows in r["filters"].items():
                     print(f"   {name:9s}", [f"{x['acc_noisy']:.3f}/{x['frobenius']:.3f}" for x in rows], "(acc/frob at keep", r["keep_fractions"], ")")
-                print(f"   (0,5) observables kept at 50% by KTA·W: {r['distant_pair_0_5_kept_at_50pct']}/9")
+                print(f"   (0,5) observables kept at 50%: {r['distant_pair_0_5_kept_at_50pct_by_filter']}  (beta={r['selected_beta']})")
             print(f"   {time.time() - t:.0f}s")
