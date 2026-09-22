@@ -1,0 +1,6 @@
+numpy
+qiskit==2.5.2
+qiskit-aer==0.17.2
+scikit-learn==1.8.0
+matplotlib
+jupyter
