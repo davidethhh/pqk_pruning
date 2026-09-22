@@ -1,0 +1,59 @@
+{
+  "factors": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "seeds": [
+    42
+  ],
+  "rows": [
+    {
+      "factor": 0.0,
+      "acc_full": 0.7666666666666667,
+      "acc_full_std": 0.0,
+      "acc_pruned": 0.8,
+      "acc_pruned_std": 0.0,
+      "frob_full": 0.04756773343047091,
+      "frob_pruned": 0.050582838049084505
+    },
+    {
+      "factor": 0.5,
+      "acc_full": 0.8,
+      "acc_full_std": 0.0,
+      "acc_pruned": 0.8333333333333334,
+      "acc_pruned_std": 0.0,
+      "frob_full": 0.17840452843648538,
+      "frob_pruned": 0.1612401622441264
+    },
+    {
+      "factor": 1.0,
+      "acc_full": 0.8,
+      "acc_full_std": 0.0,
+      "acc_pruned": 0.8333333333333334,
+      "acc_pruned_std": 0.0,
+      "frob_full": 0.3045527689186788,
+      "frob_pruned": 0.26326915228326553
+    },
+    {
+      "factor": 2.0,
+      "acc_full": 0.8333333333333334,
+      "acc_full_std": 0.0,
+      "acc_pruned": 0.8333333333333334,
+      "acc_pruned_std": 0.0,
+      "frob_full": 0.5321979673322734,
+      "frob_pruned": 0.45265090083454823
+    },
+    {
+      "factor": 4.0,
+      "acc_full": 0.8,
+      "acc_full_std": 0.0,
+      "acc_pruned": 0.8333333333333334,
+      "acc_pruned_std": 0.0,
+      "frob_full": 0.8343110928445758,
+      "frob_pruned": 0.7149324129276714
+    }
+  ]
+}
