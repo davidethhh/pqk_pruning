@@ -1,0 +1,34 @@
+== compare / synthetic
+   dose  0.0x  classical=0.859  fidelity=0.785  pqk_full=0.774  pqk_pruned=0.763   [exact: fid=0.804 pqk=0.781]  (369s)
+      fidelity   spearman=0.983 pearson=0.986 subspace10=0.997 decision_corr=0.955 flips=0.107 frob=0.043 kta=0.092/0.092
+      pqk_full   spearman=0.999 pearson=0.999 subspace10=0.998 decision_corr=0.999 flips=0.007 frob=0.052 kta=0.084/0.085
+      pqk_pruned spearman=0.998 pearson=0.998 subspace10=0.994 decision_corr=0.998 flips=0.011 frob=0.050 kta=0.108/0.110
+   dose  1.0x  classical=0.859  fidelity=0.774  pqk_full=0.793  pqk_pruned=0.752   [exact: fid=0.804 pqk=0.781]  (373s)
+      fidelity   spearman=0.971 pearson=0.974 subspace10=0.961 decision_corr=0.941 flips=0.104 frob=0.154 kta=0.089/0.092
+      pqk_full   spearman=0.983 pearson=0.981 subspace10=0.943 decision_corr=0.987 flips=0.041 frob=0.392 kta=0.084/0.085
+      pqk_pruned spearman=0.986 pearson=0.985 subspace10=0.947 decision_corr=0.988 flips=0.030 frob=0.271 kta=0.112/0.109
+   dose  4.0x  classical=0.859  fidelity=0.719  pqk_full=0.730  pqk_pruned=0.748   [exact: fid=0.804 pqk=0.781]  (373s)
+      fidelity   spearman=0.855 pearson=0.864 subspace10=0.876 decision_corr=0.871 flips=0.152 frob=0.504 kta=0.072/0.092
+      pqk_full   spearman=0.664 pearson=0.679 subspace10=0.599 decision_corr=0.821 flips=0.133 frob=1.050 kta=0.084/0.085
+      pqk_pruned spearman=0.768 pearson=0.780 subspace10=0.810 decision_corr=0.895 flips=0.122 frob=0.794 kta=0.114/0.107
+   dose 16.0x  classical=0.859  fidelity=0.563  pqk_full=0.644  pqk_pruned=0.681   [exact: fid=0.804 pqk=0.781]  (374s)
+      fidelity   spearman=0.386 pearson=0.386 subspace10=0.404 decision_corr=0.227 flips=0.330 frob=0.852 kta=0.014/0.092
+      pqk_full   spearman=0.311 pearson=0.339 subspace10=0.356 decision_corr=0.416 flips=0.241 frob=1.304 kta=0.067/0.085
+      pqk_pruned spearman=0.613 pearson=0.627 subspace10=0.553 decision_corr=0.656 flips=0.185 frob=0.975 kta=0.078/0.092
+== compare / breast_cancer
+   dose  0.0x  classical=0.970  fidelity=0.947  pqk_full=0.943  pqk_pruned=0.940   [exact: fid=0.953 pqk=0.940]  (386s)
+      fidelity   spearman=0.998 pearson=0.998 subspace10=0.998 decision_corr=0.996 flips=0.020 frob=0.042 kta=0.426/0.427
+      pqk_full   spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.003 frob=0.040 kta=0.394/0.389
+      pqk_pruned spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.000 frob=0.037 kta=0.493/0.487
+   dose  1.0x  classical=0.970  fidelity=0.943  pqk_full=0.943  pqk_pruned=0.933   [exact: fid=0.953 pqk=0.940]  (390s)
+      fidelity   spearman=0.993 pearson=0.994 subspace10=0.962 decision_corr=0.992 flips=0.010 frob=0.161 kta=0.442/0.427
+      pqk_full   spearman=0.988 pearson=0.984 subspace10=0.929 decision_corr=0.997 flips=0.017 frob=0.305 kta=0.452/0.389
+      pqk_pruned spearman=0.995 pearson=0.991 subspace10=0.972 decision_corr=0.998 flips=0.000 frob=0.171 kta=0.526/0.500
+   dose  4.0x  classical=0.970  fidelity=0.947  pqk_full=0.927  pqk_pruned=0.927   [exact: fid=0.953 pqk=0.940]  (390s)
+      fidelity   spearman=0.954 pearson=0.950 subspace10=0.833 decision_corr=0.974 flips=0.013 frob=0.517 kta=0.475/0.427
+      pqk_full   spearman=0.854 pearson=0.814 subspace10=0.660 decision_corr=0.971 flips=0.027 frob=0.836 kta=0.542/0.389
+      pqk_pruned spearman=0.959 pearson=0.935 subspace10=0.800 decision_corr=0.979 flips=0.013 frob=0.460 kta=0.542/0.505
+   dose 16.0x  classical=0.970  fidelity=0.867  pqk_full=0.893  pqk_pruned=0.910   [exact: fid=0.953 pqk=0.940]  (393s)
+      fidelity   spearman=0.702 pearson=0.692 subspace10=0.365 decision_corr=0.877 flips=0.107 frob=0.857 kta=0.479/0.427
+      pqk_full   spearman=0.693 pearson=0.663 subspace10=0.435 decision_corr=0.923 flips=0.060 frob=1.074 kta=0.544/0.389
+      pqk_pruned spearman=0.927 pearson=0.891 subspace10=0.636 decision_corr=0.948 flips=0.037 frob=0.616 kta=0.541/0.482
