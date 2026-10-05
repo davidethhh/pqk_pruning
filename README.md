@@ -31,4 +31,14 @@ Results are saved incrementally to results/regime_<dataset>.json so a partial ru
 
     caffeinate -i python noise_experiments.py --exp regime --seeds 42 43 44 2>&1 | tee regime_log.txt
 
+- `kernel_comparison.py` — answers "why doesn't noise hurt accuracy?". Four kernels on the same feature map and
+noise model: classical RBF on inputs, fidelity kernel (compute-uncompute circuit, one per pair, shot-sampled),
+PQK full, PQK pruned 25% (rank(KTA)·rank(W)). Dose sweep 0/1/4/16x. For every noisy quantum kernel it reports
+diagnostics vs the noiseless kernel: Spearman/Pearson of entries, top-10 eigen-subspace overlap, correlation of SVM
+decision values, fraction of flipped test predictions, and relative Frobenius. Train capped at 200, test at 100
+(fidelity is O(n^2) circuits).
+
+    python kernel_comparison.py --quick                 # ~1 min smoke test
+    caffeinate -i python kernel_comparison.py 2>&1 | tee compare_log.txt   # ~2-3 h, both datasets, 3 seeds
+
 Next: summary notebook (Plots 1-3 of the workplan) once full runs exist.
