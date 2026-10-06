@@ -39,6 +39,11 @@ decision values, fraction of flipped test predictions, and relative Frobenius. T
 (fidelity is O(n^2) circuits).
 
     python kernel_comparison.py --quick                 # ~1 min smoke test
-    caffeinate -i python kernel_comparison.py 2>&1 | tee compare_log.txt   # ~2-3 h, both datasets, 3 seeds
+    caffeinate -i python kernel_comparison.py 2>&1 | tee compare_log.txt   # ~1.5 h per dataset, 3 seeds
+    ./run_overnight.sh 2>&1 | tee overnight_log.txt                           # ~8-10 h: matched-budget + 2000-shot fidelity
+
+Doses 0/1/2/4/8/16x; seeds 42-44 everywhere plus 45-46 at 4x and 16x. `--fid-shots` unset = matched
+total shot budget with PQK (27 settings x 2000 = 54,000 per point -> ~270 per fidelity pair at 200 training points).
+Results/figures are tagged (`compare_matched_*`, `compare_fid2000_*`).
 
 Next: summary notebook (Plots 1-3 of the workplan) once full runs exist.
