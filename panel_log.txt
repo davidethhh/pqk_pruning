@@ -1,1 +1,64 @@
-/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/davidramos/Downloads/pqk_pruning/panel_experiments.py': [Errno 2] No such file or directory
+   synthetic     sim1x            ideal=0.774 full=0.781±0.005 sp=0.98 | random=0.733/0.98 w_only=0.700/0.99 kta_rank_w=0.759/0.99 cls0_rank_w=0.689/0.99 cls1_rank_w=0.704/0.99 cls1_only=0.722/0.97  GT-recall@25%: kta_rank_w=0.29 cls0_rank_w=0.50 cls1_rank_w=0.50  J(kta,cls1)=0.31  (94s)
+   synthetic     sim4x            ideal=0.774 full=0.737±0.032 sp=0.66 | random=0.696/0.69 w_only=0.719/0.86 kta_rank_w=0.748/0.76 cls0_rank_w=0.722/0.83 cls1_rank_w=0.693/0.87 cls1_only=0.626/0.61  GT-recall@25%: kta_rank_w=0.28 cls0_rank_w=0.50 cls1_rank_w=0.50  J(kta,cls1)=0.30  (94s)
+   synthetic     kingston_median  ideal=0.774 full=0.763±0.023 sp=1.00 | random=0.737/1.00 w_only=0.744/1.00 kta_rank_w=0.733/1.00 cls0_rank_w=0.711/1.00 cls1_rank_w=0.659/1.00 cls1_only=0.763/1.00  GT-recall@25%: kta_rank_w=0.27 cls0_rank_w=0.50 cls1_rank_w=0.44  J(kta,cls1)=0.26  (94s)
+   synthetic     fez_worst        ideal=0.774 full=0.733±0.009 sp=0.91 | random=0.693/0.80 w_only=0.719/1.00 kta_rank_w=0.730/1.00 cls0_rank_w=0.681/1.00 cls1_rank_w=0.659/1.00 cls1_only=0.685/0.73  GT-recall@25%: kta_rank_w=0.20 cls0_rank_w=0.50 cls1_rank_w=0.43  J(kta,cls1)=0.26  (94s)
+   synthetic     marrakesh_median ideal=0.774 full=0.789±0.024 sp=0.99 | random=0.741/0.99 w_only=0.737/1.00 kta_rank_w=0.756/0.99 cls0_rank_w=0.744/0.99 cls1_rank_w=0.704/0.99 cls1_only=0.733/0.99  GT-recall@25%: kta_rank_w=0.25 cls0_rank_w=0.49 cls1_rank_w=0.47  J(kta,cls1)=0.28  (93s)
+   synthetic     marrakesh_p90    ideal=0.774 full=0.756±0.009 sp=0.96 | random=0.730/0.91 w_only=0.696/1.00 kta_rank_w=0.752/1.00 cls0_rank_w=0.656/0.99 cls1_rank_w=0.693/1.00 cls1_only=0.696/0.80  GT-recall@25%: kta_rank_w=0.30 cls0_rank_w=0.51 cls1_rank_w=0.42  J(kta,cls1)=0.33  (94s)
+   synthetic     marrakesh_worst  ideal=0.774 full=0.707±0.046 sp=0.91 | random=0.670/0.85 w_only=0.715/0.94 kta_rank_w=0.737/0.98 cls0_rank_w=0.637/0.98 cls1_rank_w=0.600/0.97 cls1_only=0.648/0.77  GT-recall@25%: kta_rank_w=0.04 cls0_rank_w=0.05 cls1_rank_w=0.13  J(kta,cls1)=0.28  (94s)
+   breast_cancer sim1x            ideal=0.940 full=0.943±0.020 sp=0.99 | random=0.928/0.99 w_only=0.928/1.00 kta_rank_w=0.942/1.00 cls0_rank_w=0.942/1.00 cls1_rank_w=0.936/1.00 cls1_only=0.940/1.00  J(kta,cls1)=0.52  (179s)
+   breast_cancer sim4x            ideal=0.940 full=0.924±0.025 sp=0.85 | random=0.916/0.88 w_only=0.920/0.98 kta_rank_w=0.934/0.96 cls0_rank_w=0.924/0.97 cls1_rank_w=0.922/0.97 cls1_only=0.910/0.95  J(kta,cls1)=0.50  (180s)
+   breast_cancer kingston_median  ideal=0.940 full=0.940±0.015 sp=1.00 | random=0.930/1.00 w_only=0.947/1.00 kta_rank_w=0.947/1.00 cls0_rank_w=0.945/1.00 cls1_rank_w=0.934/1.00 cls1_only=0.942/1.00  J(kta,cls1)=0.42  (177s)
+   breast_cancer fez_worst        ideal=0.940 full=0.940±0.024 sp=0.97 | random=0.926/0.91 w_only=0.928/1.00 kta_rank_w=0.943/1.00 cls0_rank_w=0.951/1.00 cls1_rank_w=0.943/1.00 cls1_only=0.942/1.00  J(kta,cls1)=0.38  (177s)
+   breast_cancer marrakesh_median ideal=0.940 full=0.942±0.017 sp=0.99 | random=0.926/0.99 w_only=0.932/1.00 kta_rank_w=0.936/1.00 cls0_rank_w=0.940/1.00 cls1_rank_w=0.938/1.00 cls1_only=0.938/1.00  J(kta,cls1)=0.34  (177s)
+   breast_cancer marrakesh_p90    ideal=0.940 full=0.936±0.022 sp=0.95 | random=0.922/0.95 w_only=0.928/1.00 kta_rank_w=0.943/1.00 cls0_rank_w=0.930/1.00 cls1_rank_w=0.928/1.00 cls1_only=0.924/0.96  J(kta,cls1)=0.53  (177s)
+   breast_cancer marrakesh_worst  ideal=0.940 full=0.926±0.022 sp=0.96 | random=0.910/0.91 w_only=0.912/0.96 kta_rank_w=0.930/0.96 cls0_rank_w=0.930/0.97 cls1_rank_w=0.928/0.99 cls1_only=0.908/0.97  J(kta,cls1)=0.29  (178s)
+   wine          sim1x            ideal=0.759 full=0.765±0.023 sp=0.98 | random=0.716/0.99 w_only=0.796/1.00 kta_rank_w=0.784/0.99 cls0_rank_w=0.809/1.00 cls1_rank_w=0.815/1.00 cls1_only=0.802/0.99  J(kta,cls1)=0.49  (56s)
+   wine          sim4x            ideal=0.759 full=0.735±0.071 sp=0.74 | random=0.716/0.85 w_only=0.796/0.94 kta_rank_w=0.784/0.91 cls0_rank_w=0.784/0.94 cls1_rank_w=0.778/0.94 cls1_only=0.778/0.93  J(kta,cls1)=0.49  (56s)
+   wine          kingston_median  ideal=0.759 full=0.765±0.023 sp=1.00 | random=0.722/1.00 w_only=0.778/1.00 kta_rank_w=0.796/1.00 cls0_rank_w=0.809/1.00 cls1_rank_w=0.809/1.00 cls1_only=0.802/1.00  J(kta,cls1)=0.43  (55s)
+   wine          fez_worst        ideal=0.759 full=0.765±0.035 sp=0.92 | random=0.716/0.84 w_only=0.667/1.00 kta_rank_w=0.759/1.00 cls0_rank_w=0.772/1.00 cls1_rank_w=0.778/1.00 cls1_only=0.796/0.99  J(kta,cls1)=0.33  (55s)
+   wine          marrakesh_median ideal=0.759 full=0.765±0.023 sp=0.99 | random=0.716/0.99 w_only=0.784/1.00 kta_rank_w=0.815/1.00 cls0_rank_w=0.778/0.99 cls1_rank_w=0.784/0.99 cls1_only=0.790/0.99  J(kta,cls1)=0.33  (55s)
+   wine          marrakesh_p90    ideal=0.759 full=0.747±0.038 sp=0.90 | random=0.716/0.89 w_only=0.790/1.00 kta_rank_w=0.784/1.00 cls0_rank_w=0.809/1.00 cls1_rank_w=0.802/1.00 cls1_only=0.790/0.99  J(kta,cls1)=0.52  (55s)
+   wine          marrakesh_worst  ideal=0.759 full=0.667±0.000 sp=0.92 | random=0.679/0.81 w_only=0.667/0.93 kta_rank_w=0.685/0.91 cls0_rank_w=0.710/0.95 cls1_rank_w=0.685/0.98 cls1_only=0.667/0.91  J(kta,cls1)=0.19  (56s)
+   pima          sim1x            ideal=0.717 full=0.714±0.009 sp=0.99 | random=0.665/0.99 w_only=0.706/1.00 kta_rank_w=0.694/0.99 cls0_rank_w=0.691/1.00 cls1_rank_w=0.685/1.00 cls1_only=0.690/0.98  J(kta,cls1)=0.38  (243s)
+   pima          sim4x            ideal=0.717 full=0.678±0.019 sp=0.82 | random=0.664/0.83 w_only=0.680/0.94 kta_rank_w=0.688/0.86 cls0_rank_w=0.678/0.95 cls1_rank_w=0.675/0.93 cls1_only=0.675/0.78  J(kta,cls1)=0.37  (244s)
+   pima          kingston_median  ideal=0.717 full=0.717±0.014 sp=1.00 | random=0.674/1.00 w_only=0.711/1.00 kta_rank_w=0.713/1.00 cls0_rank_w=0.697/1.00 cls1_rank_w=0.701/1.00 cls1_only=0.701/1.00  J(kta,cls1)=0.39  (240s)
+   pima          fez_worst        ideal=0.717 full=0.711±0.014 sp=0.96 | random=0.677/0.86 w_only=0.694/1.00 kta_rank_w=0.709/1.00 cls0_rank_w=0.696/1.00 cls1_rank_w=0.700/1.00 cls1_only=0.690/0.86  J(kta,cls1)=0.28  (242s)
+   pima          marrakesh_median ideal=0.717 full=0.714±0.013 sp=0.99 | random=0.671/0.99 w_only=0.687/1.00 kta_rank_w=0.704/1.00 cls0_rank_w=0.684/1.00 cls1_rank_w=0.704/1.00 cls1_only=0.691/0.99  J(kta,cls1)=0.28  (242s)
+   pima          marrakesh_p90    ideal=0.717 full=0.703±0.015 sp=0.93 | random=0.652/0.92 w_only=0.704/1.00 kta_rank_w=0.697/1.00 cls0_rank_w=0.710/1.00 cls1_rank_w=0.698/1.00 cls1_only=0.685/0.97  J(kta,cls1)=0.40  (243s)
+   pima          marrakesh_worst  ideal=0.717 full=0.694±0.005 sp=0.95 | random=0.654/0.84 w_only=0.687/0.94 kta_rank_w=0.681/0.94 cls0_rank_w=0.658/0.94 cls1_rank_w=0.668/0.92 cls1_only=0.657/0.88  J(kta,cls1)=0.22  (241s)
+   heart         sim1x            ideal=0.597 full=0.593±0.010 sp=0.98 | random=0.584/0.98 w_only=0.609/0.99 kta_rank_w=0.609/0.99 cls0_rank_w=0.617/0.99 cls1_rank_w=0.621/0.99 cls1_only=0.642/0.99  J(kta,cls1)=0.32  (85s)
+   heart         sim4x            ideal=0.597 full=0.576±0.029 sp=0.78 | random=0.564/0.83 w_only=0.621/0.93 kta_rank_w=0.588/0.88 cls0_rank_w=0.613/0.92 cls1_rank_w=0.609/0.91 cls1_only=0.609/0.93  J(kta,cls1)=0.32  (85s)
+   heart         kingston_median  ideal=0.597 full=0.597±0.041 sp=1.00 | random=0.584/1.00 w_only=0.621/1.00 kta_rank_w=0.605/1.00 cls0_rank_w=0.626/1.00 cls1_rank_w=0.605/1.00 cls1_only=0.638/1.00  J(kta,cls1)=0.29  (84s)
+   heart         fez_worst        ideal=0.597 full=0.593±0.044 sp=0.94 | random=0.605/0.85 w_only=0.572/1.00 kta_rank_w=0.572/1.00 cls0_rank_w=0.617/1.00 cls1_rank_w=0.593/1.00 cls1_only=0.642/0.99  J(kta,cls1)=0.21  (84s)
+   heart         marrakesh_median ideal=0.597 full=0.605±0.027 sp=0.99 | random=0.597/0.99 w_only=0.613/1.00 kta_rank_w=0.626/1.00 cls0_rank_w=0.617/0.99 cls1_rank_w=0.621/1.00 cls1_only=0.634/0.99  J(kta,cls1)=0.26  (84s)
+   heart         marrakesh_p90    ideal=0.597 full=0.597±0.021 sp=0.92 | random=0.593/0.90 w_only=0.588/1.00 kta_rank_w=0.605/1.00 cls0_rank_w=0.626/1.00 cls1_rank_w=0.605/1.00 cls1_only=0.630/0.98  J(kta,cls1)=0.29  (84s)
+   heart         marrakesh_worst  ideal=0.597 full=0.568±0.017 sp=0.93 | random=0.564/0.83 w_only=0.584/0.94 kta_rank_w=0.584/0.94 cls0_rank_w=0.564/0.87 cls1_rank_w=0.572/0.98 cls1_only=0.556/0.92  J(kta,cls1)=0.21  (85s)
+   sonar         sim1x            ideal=0.772 full=0.762±0.013 sp=0.98 | random=0.693/0.99 w_only=0.735/0.99 kta_rank_w=0.741/0.99 cls0_rank_w=0.688/0.99 cls1_rank_w=0.693/0.99 cls1_only=0.677/0.99  J(kta,cls1)=0.37  (65s)
+   sonar         sim4x            ideal=0.772 full=0.704±0.046 sp=0.76 | random=0.661/0.84 w_only=0.714/0.92 kta_rank_w=0.725/0.86 cls0_rank_w=0.656/0.89 cls1_rank_w=0.688/0.91 cls1_only=0.667/0.88  J(kta,cls1)=0.39  (65s)
+   sonar         kingston_median  ideal=0.772 full=0.767±0.015 sp=1.00 | random=0.667/1.00 w_only=0.704/1.00 kta_rank_w=0.714/1.00 cls0_rank_w=0.651/1.00 cls1_rank_w=0.683/1.00 cls1_only=0.698/1.00  J(kta,cls1)=0.36  (64s)
+   sonar         fez_worst        ideal=0.772 full=0.778±0.034 sp=0.94 | random=0.661/0.85 w_only=0.646/1.00 kta_rank_w=0.741/1.00 cls0_rank_w=0.683/1.00 cls1_rank_w=0.698/1.00 cls1_only=0.688/1.00  J(kta,cls1)=0.37  (64s)
+   sonar         marrakesh_median ideal=0.772 full=0.751±0.007 sp=0.99 | random=0.683/0.99 w_only=0.661/1.00 kta_rank_w=0.762/1.00 cls0_rank_w=0.704/1.00 cls1_rank_w=0.698/1.00 cls1_only=0.672/1.00  J(kta,cls1)=0.33  (64s)
+   sonar         marrakesh_p90    ideal=0.772 full=0.725±0.020 sp=0.92 | random=0.661/0.89 w_only=0.735/1.00 kta_rank_w=0.735/1.00 cls0_rank_w=0.667/1.00 cls1_rank_w=0.709/1.00 cls1_only=0.661/0.92  J(kta,cls1)=0.34  (65s)
+   sonar         marrakesh_worst  ideal=0.772 full=0.640±0.033 sp=0.92 | random=0.587/0.82 w_only=0.683/0.93 kta_rank_w=0.667/0.90 cls0_rank_w=0.661/0.94 cls1_rank_w=0.587/0.92 cls1_only=0.582/0.90  J(kta,cls1)=0.27  (65s)
+   ionosphere    sim1x            ideal=0.884 full=0.874±0.024 sp=0.99 | random=0.846/0.99 w_only=0.818/1.00 kta_rank_w=0.824/0.99 cls0_rank_w=0.811/0.99 cls1_rank_w=0.827/1.00 cls1_only=0.836/1.00  J(kta,cls1)=0.34  (110s)
+   ionosphere    sim4x            ideal=0.884 full=0.789±0.036 sp=0.79 | random=0.767/0.90 w_only=0.786/0.95 kta_rank_w=0.796/0.85 cls0_rank_w=0.764/0.86 cls1_rank_w=0.745/0.91 cls1_only=0.745/0.91  J(kta,cls1)=0.28  (111s)
+   ionosphere    kingston_median  ideal=0.884 full=0.884±0.019 sp=1.00 | random=0.846/1.00 w_only=0.811/1.00 kta_rank_w=0.884/1.00 cls0_rank_w=0.830/1.00 cls1_rank_w=0.884/1.00 cls1_only=0.843/1.00  J(kta,cls1)=0.25  (109s)
+   ionosphere    fez_worst        ideal=0.884 full=0.881±0.029 sp=0.97 | random=0.814/0.91 w_only=0.821/1.00 kta_rank_w=0.884/1.00 cls0_rank_w=0.827/1.00 cls1_rank_w=0.858/1.00 cls1_only=0.833/0.92  J(kta,cls1)=0.27  (109s)
+   ionosphere    marrakesh_median ideal=0.884 full=0.881±0.019 sp=1.00 | random=0.843/0.99 w_only=0.811/1.00 kta_rank_w=0.858/1.00 cls0_rank_w=0.748/1.00 cls1_rank_w=0.840/1.00 cls1_only=0.840/1.00  J(kta,cls1)=0.18  (109s)
+   ionosphere    marrakesh_p90    ideal=0.884 full=0.852±0.024 sp=0.95 | random=0.808/0.95 w_only=0.821/1.00 kta_rank_w=0.833/1.00 cls0_rank_w=0.802/1.00 cls1_rank_w=0.843/1.00 cls1_only=0.789/0.93  J(kta,cls1)=0.36  (109s)
+   ionosphere    marrakesh_worst  ideal=0.884 full=0.840±0.035 sp=0.93 | random=0.789/0.85 w_only=0.871/0.95 kta_rank_w=0.881/0.94 cls0_rank_w=0.827/0.93 cls1_rank_w=0.840/0.97 cls1_only=0.818/0.98  J(kta,cls1)=0.36  (109s)
+Traceback (most recent call last):
+  File "/Users/davidramos/Downloads/pqk_pruning/panel_experiments.py", line 227, in <module>
+    panel(args.datasets, args.profiles, args.seeds, shots=1000 if args.quick else args.shots, quick=args.quick)
+  File "/Users/davidramos/Downloads/pqk_pruning/panel_experiments.py", line 179, in panel
+    cells = [run_cell(ds, hw, dose, sd, shots=shots, quick=quick) for sd in seeds]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/davidramos/Downloads/pqk_pruning/panel_experiments.py", line 117, in run_cell
+    Fn_tr=sampled_features(X_tr, obs, **kw), Fn_te=sampled_features(X_te, obs, **kw))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/davidramos/Downloads/pqk_pruning/pqk.py", line 253, in sampled_features
+    jobs, serves = measurement_jobs(n, observables, measure_groups, min_settings)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/davidramos/Downloads/pqk_pruning/pqk.py", line 208, in measurement_jobs
+    raise ValueError(f"observable {o.label} is not served by any measurement group")
+ValueError: observable X4 is not served by any measurement group
