@@ -1,0 +1,107 @@
+=== START Mon Oct  5 18:42:22 CST 2026
+== compare_matched / synthetic
+   shots: pqk 2000 x 27 settings = 54000 per point; fidelity 270 x 200 pairs = 54000 per point
+   dose  0.0x (3 seeds) classical=0.859±0.010  fidelity=0.793±0.014  pqk_full=0.774±0.028  pqk_pruned=0.763±0.019   [exact: fid=0.804 pqk=0.781]  (341s)
+      fidelity   spearman=0.969 pearson=0.973 subspace10=0.994 decision_corr=0.912 flips=0.093 frob=0.059 kta=0.090/0.092
+      pqk_full   spearman=0.999 pearson=0.999 subspace10=0.998 decision_corr=0.999 flips=0.007 frob=0.052 kta=0.084/0.085
+      pqk_pruned spearman=0.998 pearson=0.998 subspace10=0.994 decision_corr=0.998 flips=0.011 frob=0.050 kta=0.108/0.110
+   dose  1.0x (3 seeds) classical=0.859±0.010  fidelity=0.733±0.031  pqk_full=0.793±0.023  pqk_pruned=0.752±0.026   [exact: fid=0.804 pqk=0.781]  (348s)
+      fidelity   spearman=0.950 pearson=0.955 subspace10=0.963 decision_corr=0.901 flips=0.107 frob=0.159 kta=0.086/0.092
+      pqk_full   spearman=0.983 pearson=0.981 subspace10=0.943 decision_corr=0.987 flips=0.041 frob=0.392 kta=0.084/0.085
+      pqk_pruned spearman=0.986 pearson=0.985 subspace10=0.947 decision_corr=0.988 flips=0.030 frob=0.271 kta=0.112/0.109
+   dose  2.0x (3 seeds) classical=0.859±0.010  fidelity=0.741±0.005  pqk_full=0.770±0.037  pqk_pruned=0.748±0.034   [exact: fid=0.804 pqk=0.781]  (349s)
+      fidelity   spearman=0.917 pearson=0.924 subspace10=0.915 decision_corr=0.878 flips=0.107 frob=0.282 kta=0.081/0.092
+      pqk_full   spearman=0.922 pearson=0.922 subspace10=0.817 decision_corr=0.955 flips=0.078 frob=0.682 kta=0.085/0.085
+      pqk_pruned spearman=0.942 pearson=0.944 subspace10=0.888 decision_corr=0.967 flips=0.056 frob=0.474 kta=0.116/0.108
+   dose  4.0x (5 seeds) classical=0.847±0.025  fidelity=0.729±0.028  pqk_full=0.738±0.038  pqk_pruned=0.751±0.042   [exact: fid=0.809 pqk=0.778]  (585s)
+      fidelity   spearman=0.804 pearson=0.814 subspace10=0.869 decision_corr=0.825 flips=0.156 frob=0.505 kta=0.073/0.100
+      pqk_full   spearman=0.669 pearson=0.684 subspace10=0.601 decision_corr=0.831 flips=0.142 frob=1.048 kta=0.086/0.092
+      pqk_pruned spearman=0.779 pearson=0.785 subspace10=0.791 decision_corr=0.895 flips=0.140 frob=0.809 kta=0.117/0.116
+   dose  8.0x (3 seeds) classical=0.859±0.010  fidelity=0.563±0.010  pqk_full=0.644±0.009  pqk_pruned=0.685±0.019   [exact: fid=0.804 pqk=0.781]  (350s)
+      fidelity   spearman=0.403 pearson=0.407 subspace10=0.454 decision_corr=0.464 flips=0.330 frob=0.819 kta=0.023/0.092
+      pqk_full   spearman=0.328 pearson=0.357 subspace10=0.413 decision_corr=0.464 flips=0.256 frob=1.266 kta=0.068/0.085
+      pqk_pruned spearman=0.617 pearson=0.627 subspace10=0.561 decision_corr=0.673 flips=0.215 frob=0.982 kta=0.086/0.090
+   dose 16.0x (5 seeds) classical=0.847±0.025  fidelity=0.558±0.011  pqk_full=0.624±0.026  pqk_pruned=0.680±0.039   [exact: fid=0.809 pqk=0.778]  (580s)
+      fidelity   spearman=0.315 pearson=0.317 subspace10=0.407 decision_corr=0.272 flips=0.358 frob=0.852 kta=0.021/0.100
+      pqk_full   spearman=0.322 pearson=0.349 subspace10=0.355 decision_corr=0.380 flips=0.278 frob=1.303 kta=0.056/0.092
+      pqk_pruned spearman=0.622 pearson=0.635 subspace10=0.559 decision_corr=0.564 flips=0.247 frob=0.989 kta=0.064/0.097
+== compare_matched / breast_cancer
+   shots: pqk 2000 x 27 settings = 54000 per point; fidelity 270 x 200 pairs = 54000 per point
+   dose  0.0x (3 seeds) classical=0.970±0.029  fidelity=0.943±0.037  pqk_full=0.943±0.025  pqk_pruned=0.940±0.033   [exact: fid=0.953 pqk=0.940]  (359s)
+      fidelity   spearman=0.996 pearson=0.996 subspace10=0.996 decision_corr=0.991 flips=0.023 frob=0.057 kta=0.424/0.427
+      pqk_full   spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.003 frob=0.040 kta=0.394/0.389
+      pqk_pruned spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.000 frob=0.037 kta=0.493/0.487
+   dose  1.0x (3 seeds) classical=0.970±0.029  fidelity=0.953±0.034  pqk_full=0.943±0.029  pqk_pruned=0.933±0.037   [exact: fid=0.953 pqk=0.940]  (364s)
+      fidelity   spearman=0.990 pearson=0.991 subspace10=0.972 decision_corr=0.987 flips=0.033 frob=0.165 kta=0.439/0.427
+      pqk_full   spearman=0.988 pearson=0.984 subspace10=0.929 decision_corr=0.997 flips=0.017 frob=0.305 kta=0.452/0.389
+      pqk_pruned spearman=0.995 pearson=0.991 subspace10=0.972 decision_corr=0.998 flips=0.000 frob=0.171 kta=0.526/0.500
+   dose  2.0x (3 seeds) classical=0.970±0.029  fidelity=0.953±0.029  pqk_full=0.940±0.033  pqk_pruned=0.930±0.037   [exact: fid=0.953 pqk=0.940]  (365s)
+      fidelity   spearman=0.981 pearson=0.981 subspace10=0.922 decision_corr=0.984 flips=0.020 frob=0.293 kta=0.451/0.427
+      pqk_full   spearman=0.955 pearson=0.942 subspace10=0.868 decision_corr=0.990 flips=0.020 frob=0.534 kta=0.499/0.389
+      pqk_pruned spearman=0.985 pearson=0.974 subspace10=0.910 decision_corr=0.995 flips=0.010 frob=0.287 kta=0.537/0.504
+   dose  4.0x (5 seeds) classical=0.962±0.025  fidelity=0.944±0.016  pqk_full=0.930±0.028  pqk_pruned=0.930±0.032   [exact: fid=0.954 pqk=0.940]  (608s)
+      fidelity   spearman=0.946 pearson=0.940 subspace10=0.835 decision_corr=0.970 flips=0.034 frob=0.517 kta=0.489/0.448
+      pqk_full   spearman=0.858 pearson=0.813 subspace10=0.670 decision_corr=0.972 flips=0.022 frob=0.833 kta=0.562/0.409
+      pqk_pruned spearman=0.966 pearson=0.939 subspace10=0.829 decision_corr=0.980 flips=0.014 frob=0.439 kta=0.566/0.528
+   dose  8.0x (3 seeds) classical=0.970±0.029  fidelity=0.870±0.057  pqk_full=0.893±0.041  pqk_pruned=0.910±0.045   [exact: fid=0.953 pqk=0.940]  (366s)
+      fidelity   spearman=0.737 pearson=0.722 subspace10=0.418 decision_corr=0.886 flips=0.103 frob=0.824 kta=0.458/0.427
+      pqk_full   spearman=0.696 pearson=0.667 subspace10=0.440 decision_corr=0.926 flips=0.060 frob=1.028 kta=0.542/0.389
+      pqk_pruned spearman=0.918 pearson=0.883 subspace10=0.646 decision_corr=0.949 flips=0.040 frob=0.605 kta=0.538/0.480
+   dose 16.0x (5 seeds) classical=0.962±0.025  fidelity=0.878±0.055  pqk_full=0.902±0.034  pqk_pruned=0.912±0.035   [exact: fid=0.954 pqk=0.940]  (611s)
+      fidelity   spearman=0.669 pearson=0.659 subspace10=0.341 decision_corr=0.889 flips=0.100 frob=0.858 kta=0.462/0.448
+      pqk_full   spearman=0.709 pearson=0.676 subspace10=0.441 decision_corr=0.918 flips=0.058 frob=1.072 kta=0.563/0.409
+      pqk_pruned spearman=0.932 pearson=0.894 subspace10=0.672 decision_corr=0.938 flips=0.042 frob=0.621 kta=0.561/0.496
+=== matched done Mon Oct  5 20:09:30 CST 2026
+== compare_fid2000 / synthetic
+   shots: pqk 2000 x 27 settings = 54000 per point; fidelity 2000 x 200 pairs = 400000 per point
+   dose  0.0x (3 seeds) classical=0.859±0.010  fidelity=0.800±0.009  pqk_full=0.774±0.028  pqk_pruned=0.763±0.019   [exact: fid=0.804 pqk=0.781]  (512s)
+      fidelity   spearman=0.996 pearson=0.996 subspace10=0.999 decision_corr=0.985 flips=0.056 frob=0.024 kta=0.092/0.092
+      pqk_full   spearman=0.999 pearson=0.999 subspace10=0.998 decision_corr=0.999 flips=0.007 frob=0.052 kta=0.084/0.085
+      pqk_pruned spearman=0.998 pearson=0.998 subspace10=0.994 decision_corr=0.998 flips=0.011 frob=0.050 kta=0.108/0.110
+   dose  1.0x (3 seeds) classical=0.859±0.010  fidelity=0.796±0.028  pqk_full=0.793±0.023  pqk_pruned=0.752±0.026   [exact: fid=0.804 pqk=0.781]  (526s)
+      fidelity   spearman=0.990 pearson=0.991 subspace10=0.967 decision_corr=0.980 flips=0.052 frob=0.149 kta=0.090/0.092
+      pqk_full   spearman=0.983 pearson=0.981 subspace10=0.943 decision_corr=0.987 flips=0.041 frob=0.392 kta=0.084/0.085
+      pqk_pruned spearman=0.986 pearson=0.985 subspace10=0.947 decision_corr=0.988 flips=0.030 frob=0.271 kta=0.112/0.109
+   dose  2.0x (3 seeds) classical=0.859±0.010  fidelity=0.774±0.038  pqk_full=0.770±0.037  pqk_pruned=0.748±0.034   [exact: fid=0.804 pqk=0.781]  (525s)
+      fidelity   spearman=0.974 pearson=0.977 subspace10=0.927 decision_corr=0.961 flips=0.081 frob=0.277 kta=0.086/0.092
+      pqk_full   spearman=0.922 pearson=0.922 subspace10=0.817 decision_corr=0.955 flips=0.078 frob=0.682 kta=0.085/0.085
+      pqk_pruned spearman=0.942 pearson=0.944 subspace10=0.888 decision_corr=0.967 flips=0.056 frob=0.474 kta=0.116/0.108
+   dose  4.0x (5 seeds) classical=0.847±0.025  fidelity=0.727±0.043  pqk_full=0.738±0.038  pqk_pruned=0.751±0.042   [exact: fid=0.809 pqk=0.778]  (878s)
+      fidelity   spearman=0.908 pearson=0.915 subspace10=0.894 decision_corr=0.913 flips=0.140 frob=0.502 kta=0.085/0.100
+      pqk_full   spearman=0.669 pearson=0.684 subspace10=0.601 decision_corr=0.831 flips=0.142 frob=1.048 kta=0.086/0.092
+      pqk_pruned spearman=0.779 pearson=0.785 subspace10=0.791 decision_corr=0.895 flips=0.140 frob=0.809 kta=0.117/0.116
+   dose  8.0x (3 seeds) classical=0.859±0.010  fidelity=0.563±0.010  pqk_full=0.644±0.009  pqk_pruned=0.685±0.019   [exact: fid=0.804 pqk=0.781]  (528s)
+      fidelity   spearman=0.593 pearson=0.598 subspace10=0.604 decision_corr=0.561 flips=0.330 frob=0.818 kta=0.038/0.092
+      pqk_full   spearman=0.328 pearson=0.357 subspace10=0.413 decision_corr=0.464 flips=0.256 frob=1.266 kta=0.068/0.085
+      pqk_pruned spearman=0.617 pearson=0.627 subspace10=0.561 decision_corr=0.673 flips=0.215 frob=0.982 kta=0.086/0.090
+   dose 16.0x (5 seeds) classical=0.847±0.025  fidelity=0.558±0.011  pqk_full=0.624±0.026  pqk_pruned=0.680±0.039   [exact: fid=0.809 pqk=0.778]  (881s)
+      fidelity   spearman=0.502 pearson=0.504 subspace10=0.425 decision_corr=0.385 flips=0.362 frob=0.851 kta=0.033/0.100
+      pqk_full   spearman=0.322 pearson=0.349 subspace10=0.355 decision_corr=0.380 flips=0.278 frob=1.303 kta=0.056/0.092
+      pqk_pruned spearman=0.622 pearson=0.635 subspace10=0.559 decision_corr=0.564 flips=0.247 frob=0.989 kta=0.064/0.097
+== compare_fid2000 / breast_cancer
+   shots: pqk 2000 x 27 settings = 54000 per point; fidelity 2000 x 200 pairs = 400000 per point
+   dose  0.0x (3 seeds) classical=0.970±0.029  fidelity=0.953±0.033  pqk_full=0.943±0.025  pqk_pruned=0.940±0.033   [exact: fid=0.953 pqk=0.940]  (539s)
+      fidelity   spearman=0.999 pearson=0.999 subspace10=0.999 decision_corr=0.999 flips=0.013 frob=0.023 kta=0.427/0.427
+      pqk_full   spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.003 frob=0.040 kta=0.394/0.389
+      pqk_pruned spearman=1.000 pearson=1.000 subspace10=0.998 decision_corr=1.000 flips=0.000 frob=0.037 kta=0.493/0.487
+   dose  1.0x (3 seeds) classical=0.970±0.029  fidelity=0.950±0.029  pqk_full=0.943±0.029  pqk_pruned=0.933±0.037   [exact: fid=0.953 pqk=0.940]  (547s)
+      fidelity   spearman=0.996 pearson=0.997 subspace10=0.972 decision_corr=0.997 flips=0.010 frob=0.156 kta=0.444/0.427
+      pqk_full   spearman=0.988 pearson=0.984 subspace10=0.929 decision_corr=0.997 flips=0.017 frob=0.305 kta=0.452/0.389
+      pqk_pruned spearman=0.995 pearson=0.991 subspace10=0.972 decision_corr=0.998 flips=0.000 frob=0.171 kta=0.526/0.500
+   dose  2.0x (3 seeds) classical=0.970±0.029  fidelity=0.950±0.037  pqk_full=0.940±0.033  pqk_pruned=0.930±0.037   [exact: fid=0.953 pqk=0.940]  (548s)
+      fidelity   spearman=0.988 pearson=0.989 subspace10=0.929 decision_corr=0.994 flips=0.017 frob=0.288 kta=0.459/0.427
+      pqk_full   spearman=0.955 pearson=0.942 subspace10=0.868 decision_corr=0.990 flips=0.020 frob=0.534 kta=0.499/0.389
+      pqk_pruned spearman=0.985 pearson=0.974 subspace10=0.910 decision_corr=0.995 flips=0.010 frob=0.287 kta=0.537/0.504
+   dose  4.0x (5 seeds) classical=0.962±0.025  fidelity=0.942±0.026  pqk_full=0.930±0.028  pqk_pruned=0.930±0.032   [exact: fid=0.954 pqk=0.940]  (919s)
+      fidelity   spearman=0.962 pearson=0.956 subspace10=0.850 decision_corr=0.981 flips=0.028 frob=0.515 kta=0.507/0.448
+      pqk_full   spearman=0.858 pearson=0.813 subspace10=0.670 decision_corr=0.972 flips=0.022 frob=0.833 kta=0.562/0.409
+      pqk_pruned spearman=0.966 pearson=0.939 subspace10=0.829 decision_corr=0.980 flips=0.014 frob=0.439 kta=0.566/0.528
+   dose  8.0x (3 seeds) classical=0.970±0.029  fidelity=0.873±0.054  pqk_full=0.893±0.041  pqk_pruned=0.910±0.045   [exact: fid=0.953 pqk=0.940]  (554s)
+      fidelity   spearman=0.798 pearson=0.772 subspace10=0.515 decision_corr=0.904 flips=0.100 frob=0.823 kta=0.519/0.427
+      pqk_full   spearman=0.696 pearson=0.667 subspace10=0.440 decision_corr=0.926 flips=0.060 frob=1.028 kta=0.542/0.389
+      pqk_pruned spearman=0.918 pearson=0.883 subspace10=0.646 decision_corr=0.949 flips=0.040 frob=0.605 kta=0.538/0.480
+   dose 16.0x (5 seeds) classical=0.962±0.025  fidelity=0.884±0.049  pqk_full=0.902±0.034  pqk_pruned=0.912±0.035   [exact: fid=0.954 pqk=0.940]  (924s)
+      fidelity   spearman=0.729 pearson=0.721 subspace10=0.368 decision_corr=0.899 flips=0.094 frob=0.857 kta=0.542/0.448
+      pqk_full   spearman=0.709 pearson=0.676 subspace10=0.441 decision_corr=0.918 flips=0.058 frob=1.072 kta=0.563/0.409
+      pqk_pruned spearman=0.932 pearson=0.894 subspace10=0.672 decision_corr=0.938 flips=0.042 frob=0.621 kta=0.561/0.496
+=== END Mon Oct  5 22:20:53 CST 2026
