@@ -9,10 +9,11 @@ Both are returned scaled to [-pi, pi] so they can be fed directly as rotation an
 from __future__ import annotations
 
 import numpy as np
-from sklearn.datasets import load_breast_cancer
+import pandas as pd
+from sklearn.datasets import fetch_openml, load_breast_cancer, load_wine
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 # Linear physical topology 0-1-2-3-4-5.  Signal only on these adjacent pairs.
 SIGNAL_PAIRS = [(0, 1), (1, 2), (3, 4), (4, 5)]
@@ -46,6 +47,34 @@ def load_preprocessed_breast_cancer(n_components: int = 6, seed: int = 42):
     return X, y
 
 
+# OpenML / sklearn tabular datasets, PCA-reduced to n_qubits.  Chosen so the noiseless PQK is
+# NOT saturated (Breast Cancer at 0.94 leaves noise nowhere to bite).  Approximate classical
+# RBF accuracies: pima ~0.76, heart ~0.82, sonar ~0.85, ionosphere ~0.93, banknote ~0.99 (saturated
+# control), wine (class 0 vs rest) ~0.98.
+OPENML = {"pima": ("diabetes", 1), "heart": ("heart-statlog", 1), "sonar": ("sonar", 1),
+          "ionosphere": ("ionosphere", 1), "banknote": ("banknote-authentication", 1)}
+REAL_DATASETS = ["breast_cancer", "wine", *OPENML]
+ALL_DATASETS = ["synthetic", *REAL_DATASETS]
+
+
+def load_tabular(name: str, n_components: int = 6, seed: int = 42):
+    """Any real dataset -> (X_pca, y in {-1,+1}).  Binary classes: the first class label
+    (as given by the source) is -1, everything else +1."""
+    if name == "breast_cancer":
+        return load_preprocessed_breast_cancer(n_components, seed)
+    if name == "wine":
+        d = load_wine(); X, t = d.data, (d.target != 0).astype(int)
+    else:
+        oml_name, version = OPENML[name]
+        d = fetch_openml(name=oml_name, version=version, as_frame=True, parser="auto")
+        X = d.data.apply(pd.to_numeric, errors="coerce").fillna(0.0).to_numpy(dtype=float)
+        t = pd.factorize(d.target)[0]
+    y = np.where(t == 0, -1.0, 1.0)
+    X = StandardScaler().fit_transform(X)
+    X = PCA(n_components=min(n_components, X.shape[1]), random_state=seed).fit_transform(X)
+    return X, y
+
+
 # Angle range per dataset.  The synthetic label is a low-degree polynomial in x;
 # stretching x over a full period makes the PQK features oscillate too fast and the
 # exact kernel drops to chance (KTA 0.04, acc 0.57).  Keeping the workplan's [-1, 1]
@@ -62,13 +91,13 @@ def scale_to_angles(X_train: np.ndarray, X_test: np.ndarray, angle_range=(-np.pi
 def load_dataset(name: str, n_qubits: int = 6, test_size: float = 0.3, seed: int = 42,
                  angle_range=None):
     """Return (X_train, X_test, y_train, y_test) with features scaled to angle_range."""
-    angle_range = angle_range or DEFAULT_ANGLE_RANGE[name]
+    angle_range = angle_range or DEFAULT_ANGLE_RANGE.get(name, (-np.pi, np.pi))
     if name == "synthetic":
         X, y = generate_synthetic_pqk_data(num_features=n_qubits, seed=seed)
-    elif name == "breast_cancer":
-        X, y = load_preprocessed_breast_cancer(n_components=n_qubits, seed=seed)
+    elif name in REAL_DATASETS:
+        X, y = load_tabular(name, n_components=n_qubits, seed=seed)
     else:
-        raise ValueError(f"unknown dataset {name!r}")
+        raise ValueError(f"unknown dataset {name!r}; choose from {ALL_DATASETS}")
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=test_size, random_state=seed, stratify=y
     )
@@ -77,7 +106,7 @@ def load_dataset(name: str, n_qubits: int = 6, test_size: float = 0.3, seed: int
 
 
 if __name__ == "__main__":
-    for name in ("synthetic", "breast_cancer"):
+    for name in ALL_DATASETS:
         X_tr, X_te, y_tr, y_te = load_dataset(name)
         print(f"{name:14s} train={X_tr.shape} test={X_te.shape} "
               f"pos-frac={np.mean(y_tr == 1):.2f} range=[{X_tr.min():.2f},{X_tr.max():.2f}]")

@@ -46,4 +46,20 @@ Doses 0/1/2/4/8/16x; seeds 42-44 everywhere plus 45-46 at 4x and 16x. `--fid-sho
 total shot budget with PQK (27 settings x 2000 = 54,000 per point -> ~270 per fidelity pair at 200 training points).
 Results/figures are tagged (`compare_matched_*`, `compare_fid2000_*`).
 
-Next: summary notebook (Plots 1-3 of the workplan) once full runs exist.
+## Round 3 (Unai's questions, Oct 2026)
+
+- `calibration_scan.py` — pulls live calibration from the IBM account (`python calibration_scan.py`), saves
+  `results/calibration_<backend>.json`, enumerates every usable linear 6-qubit chain and expresses its readout
+  profile as an equivalent dose vs our simulated 1x = {0.5,0.5,0.5,6,6,6}%. Writes `results/chain_scan_<backend>.json`
+  with median / p90 / worst chains in `HardwareProfile` format. `--from-json` re-scans a dump someone else pulled.
+- `dataset_loader.py` now has pima, heart, sonar, ionosphere, banknote (OpenML, downloaded on first use) and wine.
+- `panel_experiments.py` — datasets x noise profiles (simulated doses and real chains) x selectors, including the
+  classical mutual-information selector (`cls0`: direct qubit<->input, `cls1`: light-cone radius 1) vs the quantum-pilot
+  KTA selector, each x rank(W). Reports accuracy and Spearman(K_noisy, K_exact) at 25%/50% keep, ground-truth
+  precision/recall on synthetic, and Jaccard overlap between selectors. Resumable: re-running skips finished cells.
+
+    python calibration_scan.py                                 # ~1 min, needs saved IBM account
+    python panel_experiments.py --quick                        # ~15 min smoke test
+    caffeinate -i python panel_experiments.py 2>&1 | tee panel_log.txt    # ~4-6 h
+
+Next: summary notebook once the panel exists.
