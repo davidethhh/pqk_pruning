@@ -53,7 +53,8 @@ def load_preprocessed_breast_cancer(n_components: int = 6, seed: int = 42):
 # control), wine (class 0 vs rest) ~0.98.
 OPENML = {"pima": ("diabetes", 1), "heart": ("heart-statlog", 1), "sonar": ("sonar", 1),
           "ionosphere": ("ionosphere", 1), "banknote": ("banknote-authentication", 1)}
-REAL_DATASETS = ["breast_cancer", "wine", *OPENML]
+# banknote has only 4 features (< 6 qubits) and is excluded from the default panel
+REAL_DATASETS = ["breast_cancer", "wine", "pima", "heart", "sonar", "ionosphere"]
 ALL_DATASETS = ["synthetic", *REAL_DATASETS]
 
 
@@ -70,8 +71,10 @@ def load_tabular(name: str, n_components: int = 6, seed: int = 42):
         X = d.data.apply(pd.to_numeric, errors="coerce").fillna(0.0).to_numpy(dtype=float)
         t = pd.factorize(d.target)[0]
     y = np.where(t == 0, -1.0, 1.0)
+    if X.shape[1] < n_components:
+        raise ValueError(f"{name} has {X.shape[1]} features, fewer than {n_components} qubits")
     X = StandardScaler().fit_transform(X)
-    X = PCA(n_components=min(n_components, X.shape[1]), random_state=seed).fit_transform(X)
+    X = PCA(n_components=n_components, random_state=seed).fit_transform(X)
     return X, y
 
 

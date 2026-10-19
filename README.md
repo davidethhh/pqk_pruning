@@ -62,4 +62,8 @@ Results/figures are tagged (`compare_matched_*`, `compare_fid2000_*`).
     python panel_experiments.py --quick                        # ~15 min smoke test
     caffeinate -i python panel_experiments.py 2>&1 | tee panel_log.txt    # ~4-6 h
 
+- `kernel_comparison.py --profiles ...` runs the four-kernel comparison on real chains instead of doses, and adds a
+  `pqk_w_only` arm (calibration-only selection, same features as `pqk_pruned`). `run_overnight2.sh` = sonar,
+  ionosphere, synthetic x {noiseless, kingston median, marrakesh median/p90/worst}, 5 seeds, matched budget (~2 h).
+
 Next: summary notebook once the panel exists.

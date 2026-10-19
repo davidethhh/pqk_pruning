@@ -112,7 +112,9 @@ def svm_acc(K_tr, K_te, y_tr, y_te) -> float:
 # ============================================================================ main comparison
 def compare(dataset: str, hw: HardwareProfile, *, doses=(0.0, 1.0, 2.0, 4.0, 8.0, 16.0), seeds=(42,), quick=False,
             n_train_cap=200, n_test_cap=100, pqk_shots=2000, fid_shots=None, keep_fraction=0.25,
-            extra_seeds_at=(4.0, 16.0), extra_seeds=(), tag="") -> dict:
+            extra_seeds_at=(4.0, 16.0), extra_seeds=(), tag="", profiles=None) -> dict:
+    """profiles: list of (HardwareProfile, dose, label) to run instead of scaling `hw` by `doses`.
+    Each entry becomes one row, labelled by its tag (e.g. 'marrakesh_p90') instead of a dose."""
     """fid_shots=None -> matched budget: PQK spends n_settings*pqk_shots per data point
     (15 settings after set cover of the full observable set), so fidelity gets that
     budget divided by the number of training points it is compared against.
@@ -124,17 +126,21 @@ def compare(dataset: str, hw: HardwareProfile, *, doses=(0.0, 1.0, 2.0, 4.0, 8.0
     n_tr = 40 if quick else n_train_cap
     if fid_shots is None:
         fid_shots = max(50, (n_settings * pqk_shots) // n_tr)
+    rows_spec = [(hw, d, f"{d:g}x") for d in doses] if profiles is None else list(profiles)
+    doses = [lab for _, _, lab in rows_spec]
     out = {"dataset": dataset, "doses": list(doses), "seeds": list(seeds), "extra_seeds": list(extra_seeds),
            "extra_seeds_at": list(extra_seeds_at), "pqk_shots": pqk_shots, "fid_shots": fid_shots,
            "pqk_total_shots_per_point": n_settings * pqk_shots, "fid_total_shots_per_point": fid_shots * n_tr, "rows": []}
     print(f"   shots: pqk {pqk_shots} x {n_settings} settings = {n_settings * pqk_shots} per point; "
           f"fidelity {fid_shots} x {n_tr} pairs = {fid_shots * n_tr} per point")
-    for dose in doses:
-        run_seeds = tuple(seeds) + (tuple(extra_seeds) if dose in extra_seeds_at else ())
-        row = {"dose": dose, "n_seeds": len(run_seeds), "acc": {}, "kta": {}, "diag": {}}
-        accs = {k: [] for k in ("classical", "fidelity", "pqk_full", "pqk_pruned")}
+    for hw, dose, label in rows_spec:
+        w = hw.weights(obs)
+        run_seeds = tuple(seeds) + (tuple(extra_seeds) if dose in extra_seeds_at and profiles is None else ())
+        row = {"dose": dose, "label": label, "readout_profile": [hw.readout_error[q] * dose for q in range(n)],
+               "n_seeds": len(run_seeds), "acc": {}, "kta": {}, "diag": {}}
+        accs = {k: [] for k in ("classical", "fidelity", "pqk_full", "pqk_pruned", "pqk_w_only")}
         ktas = {k: [] for k in accs}
-        diags = {k: [] for k in ("fidelity", "pqk_full", "pqk_pruned")}
+        diags = {k: [] for k in ("fidelity", "pqk_full", "pqk_pruned", "pqk_w_only")}
         t = time.time()
         for sd in run_seeds:
             X_tr, X_te, y_tr, y_te = load_dataset(dataset, n_qubits=n, seed=sd)
@@ -164,7 +170,8 @@ def compare(dataset: str, hw: HardwareProfile, *, doses=(0.0, 1.0, 2.0, 4.0, 8.0
             Fn_tr, Fn_te = sampled_features(X_tr, obs, **kw), sampled_features(X_te, obs, **kw)
             kta_scores = per_observable_kta(Fn_tr, y_tr, median_gamma(Fn_tr))
             keep = prune(rank_product(kta_scores, w), keep_fraction=keep_fraction)
-            for name, idx in (("pqk_full", np.arange(len(obs))), ("pqk_pruned", keep)):
+            keep_w = prune(w, keep_fraction=keep_fraction)
+            for name, idx in (("pqk_full", np.arange(len(obs))), ("pqk_pruned", keep), ("pqk_w_only", keep_w)):
                 g = median_gamma(Fx_tr[:, idx])
                 Kx_tr, Kx_te = gaussian_kernel(Fx_tr[:, idx], Fx_tr[:, idx], g), gaussian_kernel(Fx_te[:, idx], Fx_tr[:, idx], g)
                 Kn_tr, Kn_te = gaussian_kernel(Fn_tr[:, idx], Fn_tr[:, idx], g), gaussian_kernel(Fn_te[:, idx], Fn_tr[:, idx], g)
@@ -181,7 +188,7 @@ def compare(dataset: str, hw: HardwareProfile, *, doses=(0.0, 1.0, 2.0, 4.0, 8.0
             row["diag"][k] = {m: float(np.mean([d[m] for d in diags[k]])) for m in diags[k][0]}
         row["acc_exact"] = {k: float(np.mean(v)) for k, v in row["acc_exact"].items()}
         out["rows"].append(row)
-        print(f"   dose {dose:>4}x ({len(run_seeds)} seeds) " + "  ".join(f"{k}={row['acc'][k]['mean']:.3f}±{row['acc'][k]['std']:.3f}" for k in accs)
+        print(f"   {label:>16s} ({len(run_seeds)} seeds) " + "  ".join(f"{k}={row['acc'][k]['mean']:.3f}±{row['acc'][k]['std']:.3f}" for k in accs)
               + f"   [exact: fid={row['acc_exact']['fidelity']:.3f} pqk={row['acc_exact']['pqk_full']:.3f}]  ({time.time() - t:.0f}s)")
         for k in diags:
             d = row["diag"][k]
@@ -192,13 +199,18 @@ def compare(dataset: str, hw: HardwareProfile, *, doses=(0.0, 1.0, 2.0, 4.0, 8.0
             json.dump(out, f, indent=2)
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.8))
-    for k, st in (("classical", "k-"), ("fidelity", "s--"), ("pqk_full", "o-"), ("pqk_pruned", "^:")):
-        axes[0].errorbar(doses, [r["acc"][k]["mean"] for r in out["rows"]], [r["acc"][k]["std"] for r in out["rows"]], fmt=st, label=k)
-    axes[0].set_xlabel("readout-noise dose"); axes[0].set_ylabel("SVM test accuracy"); axes[0].legend(fontsize=7)
-    for k, st in (("fidelity", "s--"), ("pqk_full", "o-"), ("pqk_pruned", "^:")):
-        axes[1].plot(doses, [r["diag"][k]["spearman"] for r in out["rows"]], st, label=f"{k} spearman")
-        axes[1].plot(doses, [1 - r["diag"][k]["pred_flip_frac"] for r in out["rows"]], st, alpha=0.4, label=f"{k} 1-flips")
-    axes[1].set_xlabel("readout-noise dose"); axes[1].set_ylabel("rank corr. / prediction agreement"); axes[1].legend(fontsize=6)
+    xs = np.arange(len(out["rows"])) if profiles is not None else [r["dose"] for r in out["rows"]]
+    for k, st in (("classical", "k-"), ("fidelity", "s--"), ("pqk_full", "o-"), ("pqk_pruned", "^:"), ("pqk_w_only", "v-.")):
+        axes[0].errorbar(xs, [r["acc"][k]["mean"] for r in out["rows"]], [r["acc"][k]["std"] for r in out["rows"]], fmt=st, label=k)
+    axes[0].set_ylabel("SVM test accuracy"); axes[0].legend(fontsize=7)
+    for k, st in (("fidelity", "s--"), ("pqk_full", "o-"), ("pqk_pruned", "^:"), ("pqk_w_only", "v-.")):
+        axes[1].plot(xs, [r["diag"][k]["spearman"] for r in out["rows"]], st, label=k)
+    axes[1].set_ylabel("Spearman(K_noisy, K_exact)"); axes[1].legend(fontsize=7)
+    for ax in axes:
+        if profiles is not None:
+            ax.set_xticks(xs); ax.set_xticklabels([r["label"] for r in out["rows"]], rotation=30, ha="right", fontsize=8)
+        else:
+            ax.set_xlabel("readout-noise dose")
     fig.suptitle(f"Kernel comparison under noise ({dataset}{tag})"); fig.tight_layout()
     FIGURES.mkdir(exist_ok=True); fig.savefig(FIGURES / f"compare{tag}_{dataset}.png", dpi=150); plt.close(fig)
     return out
@@ -214,11 +226,17 @@ if __name__ == "__main__":
     ap.add_argument("--fid-shots", type=int, default=None, help="per pair; default = matched total budget with PQK")
     ap.add_argument("--pqk-shots", type=int, default=2000)
     ap.add_argument("--tag", default="", help="suffix for result/figure files, e.g. _matched or _fid2000")
+    ap.add_argument("--profiles", nargs="*", default=None,
+                    help="run on these profiles instead of --doses, e.g. results/chain_scan_ibm_marrakesh.json:p90 sim:1")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
     hw = HardwareProfile()
+    profiles = None
+    if args.profiles:
+        from panel_experiments import load_profile
+        profiles = [load_profile(spec) for spec in args.profiles]
     for ds in args.dataset:
         print(f"== compare{args.tag} / {ds}")
         compare(ds, hw, doses=tuple(args.doses), seeds=tuple(args.seeds), quick=args.quick,
-                fid_shots=args.fid_shots, pqk_shots=args.pqk_shots,
+                fid_shots=args.fid_shots, pqk_shots=args.pqk_shots, profiles=profiles,
                 extra_seeds=tuple(args.extra_seeds), extra_seeds_at=tuple(args.extra_seeds_at), tag=args.tag)
