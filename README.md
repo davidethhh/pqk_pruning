@@ -66,4 +66,17 @@ Results/figures are tagged (`compare_matched_*`, `compare_fid2000_*`).
   `pqk_w_only` arm (calibration-only selection, same features as `pqk_pruned`). `run_overnight2.sh` = sonar,
   ionosphere, synthetic x {noiseless, kingston median, marrakesh median/p90/worst}, 5 seeds, matched budget (~2 h).
 
+## Phase 2: hardware validation (~10 min QPU)
+
+`hardware_experiment.py` tests the reweighting prediction <O>_hw ~ prod(1-2p_q) <O>_exact on a real device:
+16 Sonar points, PQK (15 settings) + fidelity (120 pairs) + readout check, on the best and the worst usable
+6-qubit chain picked from same-day calibration. ~720 circuits x 1000 shots. Analyses: predicted-vs-measured
+attenuation per observable; Spearman(K_hw, K_exact) for PQK full / pruned-by-calibration / mitigated / fidelity.
+
+    python hardware_experiment.py --dry-run                   # FakeMarrakesh, no QPU time, ~2 min
+    python hardware_experiment.py --submit readout pqk_good   # live stage 1 (244 circuits); then --fetch and check usage
+    python hardware_experiment.py --submit pqk_bad fid        # live stage 2 (480 circuits)
+    python hardware_experiment.py --fetch
+    python hardware_experiment.py analyze --tag live
+
 Next: summary notebook once the panel exists.
