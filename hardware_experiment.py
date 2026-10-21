@@ -128,7 +128,7 @@ def run(backend, tag: str, stages=STAGES, submit_only=False, shots=SHOTS, dry=Fa
     path = RESULTS / f"hw_{tag}.json"
     state = json.load(open(path)) if path.exists() else {}
     state.update({"backend": backend.name, "dry_run": dry, "pulled_at": cal["pulled_at"], "shots": shots,
-                  "dataset": dataset, "X": X.tolist(), "y": y.tolist(), "settings": circs["settings"],
+                  "dataset": dataset, "n_qubits": N, "X": X.tolist(), "y": y.tolist(), "settings": circs["settings"],
                   "chains": chains, "calibration": {"readout_error": cal["readout_error"], "two_qubit_error": cal["two_qubit_error"]}})
     state.setdefault("jobs", {}); state.setdefault("counts", {})
     for name in ("good", "bad"):
@@ -226,19 +226,23 @@ def analyze(tag: str) -> dict:
     obs = build_observables(N)
     F_ex = exact_features(X, obs)
     K_fid_ex = fidelity_kernel_exact(X, X)
-    out = {"backend": st["backend"], "dry_run": st["dry_run"], "usage_s": st.get("usage_s"), "chains": {}}
+    out = {"backend": st["backend"], "dry_run": st["dry_run"], "n_qubits": N, "n_points": len(X), "usage_s": st.get("usage_s"), "chains": {}}
     fig1, ax1 = plt.subplots(1, 2, figsize=(9, 4), sharey=True)
     fig2, ax2 = plt.subplots(figsize=(6, 3.8))
     bars = {}
+    have_fid = "fid" in st["counts"]
     for ci, name in enumerate(("good", "bad")):
+        if f"pqk_{name}" not in st["counts"]:
+            print(f"   {name:4s} chain: no PQK data in this run, skipped"); continue
         ch = st["chains"][name]
         c_ro = st["counts"]["readout"][2 * ci:2 * ci + 2]
         p01, p10 = readout_from_counts(c_ro)
         p_meas = (p01 + p10) / 2
         p_cal = np.array(ch["readout"])
         F_hw = features_from_counts(st["counts"][f"pqk_{name}"], st["settings"], obs, len(X))
-        nf = len(st["counts"]["fid"]) // 2
-        K_fid = fidelity_from_counts(st["counts"]["fid"][ci * nf:(ci + 1) * nf], len(X))
+        if have_fid:
+            nf = len(st["counts"]["fid"]) // 2
+            K_fid = fidelity_from_counts(st["counts"]["fid"][ci * nf:(ci + 1) * nf], len(X))
 
         # --- 1. attenuation: measured slope per observable vs predicted from calibration
         slope = np.array([float(F_hw[:, m] @ F_ex[:, m] / max(F_ex[:, m] @ F_ex[:, m], 1e-9)) for m in range(len(obs))])
@@ -266,8 +270,9 @@ def analyze(tag: str) -> dict:
                                "mean_slope_1q": float(slope[[o.weight == 1 for o in obs]].mean()),
                                "mean_slope_2q": float(slope[[o.weight == 2 for o in obs]].mean())},
                "spearman": {"pqk_full": sp(F_hw, F_ex, allidx), "pqk_pruned_W": sp(F_hw, F_ex, keep),
-                            "pqk_mitigated": sp(F_mit, F_ex, allidx),
-                            "fidelity": float(spearmanr(K_fid[iu], K_fid_ex[iu]).correlation)}}
+                            "pqk_mitigated": sp(F_mit, F_ex, allidx)}}
+        if have_fid:
+            res["spearman"]["fidelity"] = float(spearmanr(K_fid[iu], K_fid_ex[iu]).correlation)
         out["chains"][name] = res
         bars[name] = res["spearman"]
         ax1[ci].scatter(pred_meas[strong], slope[strong], s=12, alpha=0.7, c=["tab:blue" if o.weight == 1 else "tab:orange" for o, s_ in zip(obs, strong) if s_])
@@ -280,12 +285,13 @@ def analyze(tag: str) -> dict:
         print(f"         attenuation corr (measured p) = {r_meas:.3f}, (IBM cal p) = {r_cal:.3f}, rms resid = {resid:.3f}  [1q mean slope {res['attenuation']['mean_slope_1q']:.2f}, 2q {res['attenuation']['mean_slope_2q']:.2f}]{note}")
         print(f"         Spearman vs exact: " + "  ".join(f"{k}={v:.3f}" for k, v in res["spearman"].items()))
     ax1[0].set_ylabel("measured attenuation (slope hw vs exact)")
-    fig1.suptitle(f"Readout reweighting: prediction vs hardware ({st['backend']}{' / dry run' if st['dry_run'] else ''})")
+    fig1.suptitle(f"Readout reweighting: prediction vs hardware ({st['backend']}, {N} qubits, {len(obs)} observables{' / dry run' if st['dry_run'] else ''})")
     fig1.tight_layout(); FIGURES.mkdir(exist_ok=True); fig1.savefig(FIGURES / f"hw_{tag}_attenuation.png", dpi=150); plt.close(fig1)
-    keys = ["pqk_full", "pqk_pruned_W", "pqk_mitigated", "fidelity"]
+    keys = ["pqk_full", "pqk_pruned_W", "pqk_mitigated"] + (["fidelity"] if have_fid else [])
     xk = np.arange(len(keys))
-    ax2.bar(xk - 0.18, [bars["good"][k] for k in keys], 0.36, label=f"good chain (dose_eq {out['chains']['good']['dose_eq']:.1f})")
-    ax2.bar(xk + 0.18, [bars["bad"][k] for k in keys], 0.36, label=f"bad chain (dose_eq {out['chains']['bad']['dose_eq']:.1f})")
+    for off, name in ((-0.18, "good"), (0.18, "bad")):
+        if name in bars:
+            ax2.bar(xk + off, [bars[name][k] for k in keys], 0.36, label=f"{name} chain (dose_eq {out['chains'][name]['dose_eq']:.1f})")
     ax2.set_xticks(xk); ax2.set_xticklabels(keys); ax2.set_ylabel("Spearman(K_hardware, K_exact)"); ax2.set_ylim(0, 1.02); ax2.legend(fontsize=8)
     ax2.set_title("Kernel ordering preserved on hardware"); fig2.tight_layout()
     fig2.savefig(FIGURES / f"hw_{tag}_kernels.png", dpi=150); plt.close(fig2)
@@ -304,7 +310,15 @@ if __name__ == "__main__":
     ap.add_argument("--tag", default=None)
     ap.add_argument("--shots", type=int, default=SHOTS)
     ap.add_argument("--dataset", default=DATASET)
+    ap.add_argument("--n-qubits", type=int, default=None, help="chain length / PQK qubits (default 6; 12 -> 630 observables, 19 settings)")
+    ap.add_argument("--stages", nargs="*", default=None, choices=STAGES, help="dry run: subset of stages")
     args = ap.parse_args()
+    if args.mode == "analyze" and args.n_qubits is None:
+        try:
+            args.n_qubits = json.load(open(RESULTS / f"hw_{args.tag}.json")).get("n_qubits", 6)
+        except Exception:
+            args.n_qubits = 6
+    N = args.n_qubits or 6
     tag = args.tag or ("dry" if args.dry_run else "live")
     if args.mode == "analyze":
         analyze(tag)
@@ -320,14 +334,14 @@ if __name__ == "__main__":
         fetch(tag)
     elif args.dry_run:
         from qiskit_ibm_runtime.fake_provider import FakeMarrakesh
-        print(f"== DRY RUN on FakeMarrakesh (local noisy simulation)")
-        run(FakeMarrakesh(), tag, shots=args.shots, dry=True, dataset=args.dataset)
+        print(f"== DRY RUN on FakeMarrakesh (local noisy simulation), {N} qubits")
+        run(FakeMarrakesh(), tag, stages=tuple(args.stages) if args.stages else STAGES, shots=args.shots, dry=True, dataset=args.dataset)
         analyze(tag)
     else:
         from qiskit_ibm_runtime import QiskitRuntimeService
         s = QiskitRuntimeService()
         b = s.backend(args.backend)
         stages = tuple(args.submit) if args.submit else STAGES
-        print(f"== LIVE on {b.name}: stages {stages}")
+        print(f"== LIVE on {b.name}: stages {stages}, {N} qubits")
         run(b, tag, stages=stages, submit_only=True, shots=args.shots, dataset=args.dataset)
         print("   jobs submitted; run `--fetch` once they finish, then `analyze --tag live`")
