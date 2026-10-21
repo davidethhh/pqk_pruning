@@ -98,6 +98,25 @@ def counts_of(pub_result) -> dict[str, int]:
     return pub_result.data.c.get_counts()
 
 
+# ============================================================================ plan
+def plan(backends) -> None:
+    """Scan each backend's live calibration; show best/worst usable chain and circuit budget. Submits nothing."""
+    n_pqk = N_POINTS * len(measurement_jobs(N, build_observables(N), min_settings=True)[0])
+    n_fid = N_POINTS * (N_POINTS - 1) // 2
+    print(f"   circuits per run: readout 4 + pqk {n_pqk} x 2 chains + fidelity {n_fid} x 2 chains = {4 + 2 * n_pqk + 2 * n_fid}")
+    best = None
+    for b in backends:
+        cal = dump_calibration(b)
+        ch = pick_chains(cal)
+        g, w = ch["good"], ch["bad"]
+        print(f"\n== {b.name}  ({cal['pulled_at'][:16]} UTC)")
+        print(f"   good chain {g['chain']}  readout {[f'{v*100:.1f}' for v in g['readout']]}%  dose_eq={g['dose_eq']:.2f}  cz={g['cx_mean']*100:.2f}%")
+        print(f"   bad  chain {w['chain']}  readout {[f'{v*100:.1f}' for v in w['readout']]}%  dose_eq={w['dose_eq']:.2f}  cz={w['cx_mean']*100:.2f}%")
+        if best is None or w["dose_eq"] > best[1]:
+            best = (b.name, w["dose_eq"])
+    print(f"\n   -> strongest contrast today: {best[0]} (worst chain dose_eq {best[1]:.2f}). Use --backend {best[0]}")
+
+
 # ============================================================================ run
 def run(backend, tag: str, stages=STAGES, submit_only=False, shots=SHOTS, dry=False, dataset=DATASET) -> dict:
     from qiskit_ibm_runtime import SamplerV2
@@ -115,6 +134,11 @@ def run(backend, tag: str, stages=STAGES, submit_only=False, shots=SHOTS, dry=Fa
     for name in ("good", "bad"):
         c = chains[name]
         print(f"   {name:4s} chain {c['chain']}  readout {[f'{v*100:.1f}' for v in c['readout']]}%  dose_eq={c['dose_eq']:.2f}")
+    if not dry:
+        n_circ = sum(len(staged[st][0]) for st in stages)
+        print(f"   about to submit {n_circ} circuits x {shots} shots = {n_circ * shots:,} shots to {backend.name} (stages {stages})")
+        if input("   type YES to submit: ").strip() != "YES":
+            print("   aborted, nothing submitted"); return state
     sampler = SamplerV2(mode=backend)
     RESULTS.mkdir(exist_ok=True)
     for st in stages:
@@ -272,7 +296,7 @@ def analyze(tag: str) -> dict:
 # ============================================================================ CLI
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("mode", nargs="?", default="run", choices=["run", "analyze"])
+    ap.add_argument("mode", nargs="?", default="run", choices=["run", "analyze", "plan"])
     ap.add_argument("--dry-run", action="store_true", help="FakeMarrakesh with its noise model; no QPU time")
     ap.add_argument("--backend", default="ibm_marrakesh")
     ap.add_argument("--submit", nargs="*", default=None, choices=STAGES, help="live: submit these stages and exit (fetch later)")
@@ -284,6 +308,14 @@ if __name__ == "__main__":
     tag = args.tag or ("dry" if args.dry_run else "live")
     if args.mode == "analyze":
         analyze(tag)
+    elif args.mode == "plan":
+        if args.dry_run:
+            from qiskit_ibm_runtime.fake_provider import FakeFez, FakeMarrakesh
+            plan([FakeFez(), FakeMarrakesh()])
+        else:
+            from qiskit_ibm_runtime import QiskitRuntimeService
+            s = QiskitRuntimeService()
+            plan([s.backend(n) for n in ("ibm_fez", "ibm_kingston", "ibm_marrakesh")])
     elif args.fetch:
         fetch(tag)
     elif args.dry_run:
