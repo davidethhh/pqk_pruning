@@ -509,6 +509,22 @@ def analyze(cfg: dict) -> dict:
             res["kernels"][k] = {"spearman": float(spearmanr(K_tr[iu], K_ref_tr[iu]).correlation), "n_obs": int(len(idx)),
                                  "acc": ev["acc"], "acc_noiseless_same_obs": ref_sub["acc"],
                                  "decision_corr": ev["decision_corr"], "flips": ev["flips"], "flips_vs_full": ev_full["flips"]}
+        # keep-fraction sweep: how much to prune is a free post-hoc question (the counts hold all observables)
+        res["keep_sweep"] = []
+        for kf in (0.10, 0.25, 0.50, 0.75, 1.0):
+            row = {"keep_fraction": kf}
+            for sel, score in (("W", W), ("KTAxW", rank(kta_o) * rank(W))):
+                idx = prune(score, kf) if kf < 1.0 else allidx
+                K_tr, K_te = kernels(F_tr, F_te, idx)
+                g_sub = median_gamma(F_ex_tr[:, idx]); K_ref_tr, K_ref_te = kernels(F_ex_tr, F_ex_te, idx, g_sub)
+                rs = svm_eval(K_ref_tr, K_ref_te, ytr, yte); ev = svm_eval(K_tr, K_te, ytr, yte, rs["_dec"], rs["_pred"])
+                row[sel] = {"n_obs": int(len(idx)), "spearman": float(spearmanr(K_tr[iu], K_ref_tr[iu]).correlation),
+                            "acc_hw": ev["acc"], "acc_exact": rs["acc"], "noise_flips": ev["flips"]}
+            res["keep_sweep"].append(row)
+        print(f"        keep-fraction sweep (selector W | KTAxW):  n_obs  spearman  acc hw / acc exact  noise flips")
+        for row in res["keep_sweep"]:
+            w_, k_ = row["W"], row["KTAxW"]
+            print(f"          keep {int(row['keep_fraction']*100):3d}%   W: {w_['n_obs']:3d} {w_['spearman']:.3f} {w_['acc_hw']:.2f}/{w_['acc_exact']:.2f} {100*w_['noise_flips']:4.0f}%   |  KTAxW: {k_['n_obs']:3d} {k_['spearman']:.3f} {k_['acc_hw']:.2f}/{k_['acc_exact']:.2f} {100*k_['noise_flips']:4.0f}%")
         if f"fid_{name}" in st["counts"]:
             K_tr, K_te = fidelity_from_counts(st["counts"][f"fid_{name}"], st["fid_pairs"], n, ntr, nte)
             from kernel_comparison import fidelity_kernel_exact
