@@ -525,6 +525,27 @@ def analyze(cfg: dict) -> dict:
         for row in res["keep_sweep"]:
             w_, k_ = row["W"], row["KTAxW"]
             print(f"          keep {int(row['keep_fraction']*100):3d}%   W: {w_['n_obs']:3d} {w_['spearman']:.3f} {w_['acc_hw']:.2f}/{w_['acc_exact']:.2f} {100*w_['noise_flips']:4.0f}%   |  KTAxW: {k_['n_obs']:3d} {k_['spearman']:.3f} {k_['acc_hw']:.2f}/{k_['acc_exact']:.2f} {100*k_['noise_flips']:4.0f}%")
+        # repeated stratified splits over ALL measured points (features are measured once; the split is free):
+        # mean +- s.e. of accuracy and noise flips per selector, KTA recomputed on each train fold.  This is the
+        # accuracy figure to report; a single 100/50 split has a +-6 pt standard error.
+        F_all, y_all = F_hw, np.concatenate([ytr, yte]); F_exa = F_ex_all
+        n_all, n_te = len(y_all), max(1, round(len(y_all) * nte / max(ntr + nte, 1))) if nte else max(1, n_all // 3)
+        rng = np.random.default_rng(c["seed"]); R = 50; acc_rs = {k: [] for k in ("full", "W", "KTAxW", "mitigated")}; fl_rs = {k: [] for k in acc_rs}
+        for r in range(R):
+            te_idx = np.concatenate([rng.choice(np.where(y_all == cl)[0], max(1, int(round(n_te * (y_all == cl).mean()))), replace=False) for cl in (-1, 1)])
+            tr_idx = np.setdiff1d(np.arange(n_all), te_idx)
+            kta_r = per_observable_kta(F_all[tr_idx], y_all[tr_idx], median_gamma(F_all[tr_idx]))
+            sels = {"full": allidx, "W": cm["keep_W"], "KTAxW": prune(rank(kta_r) * rank(W), c["keep_fraction"]), "mitigated": allidx}
+            for k, idx in sels.items():
+                A = F_all / np.clip(pred_meas, 0.05, None) if k == "mitigated" else F_all
+                K_tr, K_te = kernels(A[tr_idx], A[te_idx], idx)
+                g_sub = median_gamma(F_exa[tr_idx][:, idx]); R_tr, R_te = kernels(F_exa[tr_idx], F_exa[te_idx], idx, g_sub)
+                rs = svm_eval(R_tr, R_te, y_all[tr_idx], y_all[te_idx]); ev = svm_eval(K_tr, K_te, y_all[tr_idx], y_all[te_idx], rs["_dec"], rs["_pred"])
+                acc_rs[k].append(ev["acc"]); fl_rs[k].append(ev["flips"])
+        res["repeated_splits"] = {k: {"acc_mean": float(np.mean(acc_rs[k])), "acc_se": float(np.std(acc_rs[k]) / np.sqrt(R)),
+                                      "noise_flips_mean": float(np.mean(fl_rs[k])), "n_splits": R, "n_test_per_split": int(n_te)} for k in acc_rs}
+        print(f"        repeated splits ({R} x {n_all - n_te}/{n_te}, KTA refit per fold):  " + "  ".join(
+            f"{k} {100*v['acc_mean']:.1f}+-{100*v['acc_se']:.1f}% (flips {100*v['noise_flips_mean']:.1f}%)" for k, v in res["repeated_splits"].items()))
         if f"fid_{name}" in st["counts"]:
             K_tr, K_te = fidelity_from_counts(st["counts"][f"fid_{name}"], st["fid_pairs"], n, ntr, nte)
             from kernel_comparison import fidelity_kernel_exact

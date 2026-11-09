@@ -8,7 +8,6 @@
   "n_test": 50,
   "shots": 1000,
   "stages": [
-    "readout",
     "pqk_good",
     "pqk_bad"
   ],
@@ -17,5 +16,5 @@
   "keep_fraction": 0.25,
   "seed": 42,
   "chains": null,
-  "include_october_points": true
+  "qpu_safety_factor": 1.5
 }
