@@ -1,0 +1,21 @@
+{
+  "service_name": "unai",
+  "backend": "ibm_basquecountry",
+  "tag": "basque",
+  "dataset": "sonar",
+  "n_qubits": 6,
+  "n_train": 100,
+  "n_test": 50,
+  "shots": 1000,
+  "stages": [
+    "readout",
+    "pqk_good",
+    "pqk_bad"
+  ],
+  "max_circuits_per_job": 1000,
+  "budget_minutes": 50.0,
+  "keep_fraction": 0.25,
+  "seed": 42,
+  "chains": null,
+  "include_october_points": true
+}
