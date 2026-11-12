@@ -1,0 +1,9 @@
+# Entorno probado para basque_experiment.py (verify PASS y dry-run completos con estas versiones)
+qiskit==2.2.3
+qiskit-ibm-runtime==0.43.1
+qiskit-aer==0.18.2
+numpy==2.5.4
+scipy==1.18.1
+scikit-learn==1.9.1
+pandas==3.1.1
+matplotlib==3.11.2
